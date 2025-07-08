@@ -1,0 +1,236 @@
+﻿@model Sisloc.Models.Agendamento
+
+@{
+    ViewData["Title"] = "Novo Agendamento";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-calendar-plus me-2"></i>
+                    Novo Agendamento de Veículo
+                </h2>
+                <p class="text-muted">Preencha os dados abaixo para solicitar um veículo</p>
+            </div>
+
+            <!-- Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="agendamentoForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Dados da Viagem -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-route me-2 text-primary"></i>
+                                    Dados da Viagem
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Data e Hora -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DataPartida" class="form-label required"></label>
+                                <input asp-for="DataPartida" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="DataPartida" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="DataChegada" class="form-label required"></label>
+                                <input asp-for="DataChegada" class="form-control" type="datetime-local" />
+                                <span asp-validation-for="DataChegada" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Destino -->
+                        <div class="row mb-3">
+                            <div class="col-12">
+                                <label asp-for="Destino" class="form-label required"></label>
+                                <input asp-for="Destino" class="form-control" placeholder="Ex: Centro da cidade, Aeroporto, etc." />
+                                <span asp-validation-for="Destino" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Descrição -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label asp-for="Descricao" class="form-label"></label>
+                                <textarea asp-for="Descricao" class="form-control" rows="3" 
+                                          placeholder="Descreva o objetivo da viagem (opcional)"></textarea>
+                                <span asp-validation-for="Descricao" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dados do Solicitante -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    Dados do Solicitante
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Nome e Quantidade -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label asp-for="NomeSolicitante" class="form-label required"></label>
+                                <input asp-for="NomeSolicitante" class="form-control" placeholder="Nome completo" />
+                                <span asp-validation-for="NomeSolicitante" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="QuantidadePessoas" class="form-label required"></label>
+                                <input asp-for="QuantidadePessoas" class="form-control" type="number" min="1" max="50" />
+                                <span asp-validation-for="QuantidadePessoas" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dados do Veículo -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-car me-2 text-primary"></i>
+                                    Especificações do Veículo
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Categoria e Motorista -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label asp-for="CategoriaVeiculo" class="form-label required"></label>
+                                <select asp-for="CategoriaVeiculo" class="form-select" asp-items="ViewBag.CategoriasVeiculo">
+                                    <option value="">Selecione a categoria do veículo</option>
+                                </select>
+                                <span asp-validation-for="CategoriaVeiculo" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label class="form-label">&nbsp;</label>
+                                <div class="form-check mt-2">
+                                    <input asp-for="PrecisaMotorista" class="form-check-input" type="checkbox" />
+                                    <label asp-for="PrecisaMotorista" class="form-check-label">
+                                        Precisa de motorista
+                                    </label>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Informações sobre categorias -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Informações sobre as categorias:</h6>
+                                    <div class="row small">
+                                        <div class="col-md-6">
+                                            <strong>Hatch:</strong> Ideal para cidade (até 5 pessoas)<br>
+                                            <strong>Sedan:</strong> Conforto e elegância (até 5 pessoas)<br>
+                                            <strong>Caminhonete:</strong> Versatilidade (até 5 pessoas + carga)
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Pickup:</strong> Robustez e capacidade (até 5 pessoas)<br>
+                                            <strong>Caminhão:</strong> Transporte de carga (1-3 pessoas)
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                                    </a>
+                                    <button type="submit" class="btn btn-primary btn-lg px-4">
+                                        <i class="fas fa-paper-plane me-2"></i>Solicitar Agendamento
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">
+                                <i class="fas fa-lightbulb me-2"></i>Dicas Importantes
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Agendamentos devem ser feitos com pelo menos 24h de antecedência</li>
+                                <li>Verifique a disponibilidade de veículos para sua categoria</li>
+                                <li>Mantenha seu protocolo para consultas futuras</li>
+                                <li>Em caso de alterações, entre em contato com a administração</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+        <script>
+            $(document).ready(function() {
+                // Definir valores padrão para datas
+                var agora = new Date();
+                var amanha = new Date(agora);
+                amanha.setDate(amanha.getDate() + 1);
+                amanha.setHours(8, 0, 0, 0);
+
+                var retorno = new Date(amanha);
+                retorno.setHours(17, 0, 0, 0);
+
+                // Aplicar se os campos estiverem vazios
+                if (!$('#DataPartida').val()) {
+                    $('#DataPartida').val(amanha.toISOString().slice(0, 16));
+                }
+                if (!$('#DataChegada').val()) {
+                    $('#DataChegada').val(retorno.toISOString().slice(0, 16));
+                }
+
+                // Validação em tempo real
+                $('#DataPartida, #DataChegada').on('change', function() {
+                    var partida = new Date($('#DataPartida').val());
+                    var chegada = new Date($('#DataChegada').val());
+                    var hoje = new Date();
+
+                    if (partida < hoje) {
+                        alert('A data de partida não pode ser anterior ao momento atual.');
+                        $(this).focus();
+                        return;
+                    }
+
+                    if (chegada <= partida) {
+                        alert('A data de chegada deve ser posterior à data de partida.');
+                        $('#DataChegada').focus();
+                        return;
+                    }
+                });
+
+                // Confirmar antes de enviar
+                $('#agendamentoForm').on('submit', function(e) {
+                    var confirmacao = confirm('Confirma o envio da solicitação de agendamento?');
+                    if (!confirmacao) {
+                        e.preventDefault();
+                    }
+                });
+            });
+        </script>
+}

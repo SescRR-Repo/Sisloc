@@ -1,0 +1,373 @@
+﻿@model Sisloc.Models.Agendamento
+
+@{
+    ViewData["Title"] = "Detalhes do Agendamento - Administração";
+
+    string GetStatusClass(Sisloc.Models.Enums.StatusAgendamento status)
+    {
+        return status switch
+        {
+            Sisloc.Models.Enums.StatusAgendamento.Pendente => "warning",
+            Sisloc.Models.Enums.StatusAgendamento.Aprovado => "success",
+            Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "danger",
+            Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "primary",
+            Sisloc.Models.Enums.StatusAgendamento.Concluido => "secondary",
+            _ => "secondary"
+        };
+    }
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold text-primary mb-1">
+                        <i class="fas fa-file-alt me-2"></i>
+                        Detalhes do Agendamento
+                    </h2>
+                    <p class="text-muted mb-0">Protocolo: <span class="protocol-display">@Model.Protocolo</span></p>
+                </div>
+                <div>
+                    <span class="badge bg-@GetStatusClass(Model.Status) status-badge fs-6">
+                        @Model.Status.ToString()
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna Principal - Dados do Agendamento -->
+        <div class="col-lg-8">
+
+            <!-- Dados da Viagem -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-route me-2"></i>
+                        Dados da Viagem
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-play me-2 text-success"></i>Data/Hora Partida:</strong><br>
+                            <span class="ms-3">@Model.DataPartida.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-stop me-2 text-danger"></i>Data/Hora Chegada:</strong><br>
+                            <span class="ms-3">@Model.DataChegada.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <strong><i class="fas fa-map-marker-alt me-2 text-info"></i>Destino:</strong><br>
+                            <span class="ms-3">@Model.Destino</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Descricao))
+                        {
+                            <div class="col-12 mt-3">
+                                <strong><i class="fas fa-comment me-2 text-secondary"></i>Descrição:</strong><br>
+                                <div class="ms-3 border-start border-3 border-light ps-3">
+                                    @Model.Descricao
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados do Solicitante -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Dados do Solicitante
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <strong><i class="fas fa-user-circle me-2"></i>Nome Completo:</strong><br>
+                            <span class="ms-3">@Model.NomeSolicitante</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-users me-2"></i>Quantidade de Pessoas:</strong><br>
+                            <span class="ms-3 fw-bold">@Model.QuantidadePessoas pessoa(s)</span>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <strong><i class="fas fa-calendar me-2"></i>Data da Solicitação:</strong><br>
+                            <span class="ms-3">@Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Especificações do Veículo -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-car me-2"></i>
+                        Especificações do Veículo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-tags me-2"></i>Categoria Solicitada:</strong><br>
+                            <span class="ms-3 badge bg-primary">@Model.CategoriaVeiculo.ToString()</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-user-tie me-2"></i>Motorista:</strong><br>
+                            <span class="ms-3">
+                                @if (Model.PrecisaMotorista)
+                                {
+                                    <span class="text-success">
+                                        <i class="fas fa-check me-1"></i>Necessário
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="fas fa-times me-1"></i>Não necessário
+                                    </span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Recursos Alocados -->
+            @if (Model.VeiculoAlocado != null || Model.MotoristaAlocado != null)
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-check-circle me-2"></i>
+                            Recursos Alocados
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row">
+                            @if (Model.VeiculoAlocado != null)
+                            {
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light">
+                                        <h6 class="text-success">
+                                            <i class="fas fa-car me-2"></i>Veículo Alocado
+                                        </h6>
+                                        <p class="mb-0">
+                                            <strong>Modelo:</strong> @Model.VeiculoAlocado.Modelo<br>
+                                            <strong>Placa:</strong> @Model.VeiculoAlocado.Placa<br>
+                                            <strong>Capacidade:</strong> @Model.VeiculoAlocado.CapacidadePassageiros pessoas
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.MotoristaAlocado != null)
+                            {
+                                <div class="col-md-6">
+                                    <div class="border rounded p-3 bg-light">
+                                        <h6 class="text-info">
+                                            <i class="fas fa-user-tie me-2"></i>Motorista Alocado
+                                        </h6>
+                                        <p class="mb-0">
+                                            <strong>Nome:</strong> @Model.MotoristaAlocado.NomeCompleto<br>
+                                            <strong>Telefone:</strong> @Model.MotoristaAlocado.Telefone<br>
+                                            <strong>CNH:</strong> Categoria @Model.MotoristaAlocado.CategoriaCnh
+                                        </p>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Observações Administrativas -->
+            @if (!string.IsNullOrEmpty(Model.ObservacoesAdmin))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comment-alt me-2"></i>
+                            Observações Administrativas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-@GetStatusClass(Model.Status) mb-0">
+                            @Model.ObservacoesAdmin
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <!-- Coluna Lateral - Ações -->
+        <div class="col-lg-4">
+
+            @if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Pendente)
+            {
+                <!-- Ações de Aprovação/Reprovação -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-warning text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-gavel me-2"></i>
+                            Ações Administrativas
+                        </h5>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Aprovação -->
+                        <form asp-action="Aprovar" method="post" class="mb-3">
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <h6 class="text-success">
+                                <i class="fas fa-check-circle me-2"></i>Aprovar Agendamento
+                            </h6>
+
+                            <!-- Seleção de Veículo -->
+                            <div class="mb-3">
+                                <label class="form-label required">Veículo</label>
+                                <select name="veiculoId" class="form-select" required asp-items="ViewBag.VeiculosDisponiveis">
+                                    <option value="">Selecione o veículo</option>
+                                </select>
+                            </div>
+
+                            <!-- Seleção de Motorista -->
+                            @if (Model.PrecisaMotorista)
+                            {
+                                <div class="mb-3">
+                                    <label class="form-label required">Motorista</label>
+                                    <select name="motoristaId" class="form-select" required asp-items="ViewBag.MotoristasDisponiveis">
+                                        <option value="">Selecione o motorista</option>
+                                    </select>
+                                </div>
+                            }
+
+                            <!-- Observações -->
+                            <div class="mb-3">
+                                <label class="form-label">Observações</label>
+                                <textarea name="observacoesAdmin" class="form-control" rows="3"
+                                          placeholder="Observações para o solicitante (opcional)"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100"
+                                    onclick="return confirmarAcao('Confirma a aprovação deste agendamento?')">
+                                <i class="fas fa-check me-2"></i>Aprovar Agendamento
+                            </button>
+                        </form>
+
+                        <hr>
+
+                        <!-- Reprovação -->
+                        <form asp-action="Reprovar" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <h6 class="text-danger">
+                                <i class="fas fa-times-circle me-2"></i>Reprovar Agendamento
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label required">Motivo da Reprovação</label>
+                                <textarea name="observacoesAdmin" class="form-control" rows="3"
+                                          placeholder="Informe o motivo da reprovação..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-danger w-100"
+                                    onclick="return confirmarAcao('Confirma a reprovação deste agendamento?')">
+                                <i class="fas fa-times me-2"></i>Reprovar Agendamento
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            }
+
+            <!-- Informações do Sistema -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <strong>ID:</strong> @Model.Id<br>
+                        <strong>Protocolo:</strong> @Model.Protocolo<br>
+                        <strong>Criado em:</strong> @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")<br>
+                        <strong>Status atual:</strong> @Model.Status.ToString()
+                    </small>
+                </div>
+            </div>
+
+            <!-- Navegação -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        <a asp-action="Index" class="btn btn-outline-primary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar ao Dashboard
+                        </a>
+                        <a asp-controller="Consulta" asp-action="Protocolo" asp-route-protocolo="@Model.Protocolo"
+                           class="btn btn-outline-secondary" target="_blank">
+                            <i class="fas fa-external-link-alt me-2"></i>Ver como Usuário
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        function confirmarAcao(mensagem) {
+            return confirm(mensagem);
+        }
+
+        $(document).ready(function() {
+            // Validação antes de enviar
+            $('form').on('submit', function(e) {
+                var form = $(this);
+                var veiculoId = form.find('select[name="veiculoId"]').val();
+                var motoristaId = form.find('select[name="motoristaId"]').val();
+                var precisaMotorista = @(Model.PrecisaMotorista ? "true" : "false");
+
+                // Validar se veículo foi selecionado para aprovação
+                if (form.attr('action').includes('Aprovar')) {
+                    if (!veiculoId) {
+                        alert('Por favor, selecione um veículo.');
+                        e.preventDefault();
+                        return false;
+                    }
+
+                    if (precisaMotorista && !motoristaId) {
+                        alert('Por favor, selecione um motorista.');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+
+                // Validar motivo para reprovação
+                if (form.attr('action').includes('Reprovar')) {
+                    var observacoes = form.find('textarea[name="observacoesAdmin"]').val().trim();
+                    if (!observacoes) {
+                        alert('Por favor, informe o motivo da reprovação.');
+                        e.preventDefault();
+                        return false;
+                    }
+                }
+            });
+        });
+    </script>
+}

@@ -1,0 +1,142 @@
+﻿@{
+    ViewData["Title"] = "Consultar Status do Agendamento";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-6">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-search me-2"></i>
+                    Consultar Agendamento
+                </h2>
+                <p class="text-muted">Digite o protocolo para verificar o status da sua solicitação</p>
+            </div>
+
+            <!-- Formulário de Consulta -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Buscar" method="post">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <div class="mb-4">
+                            <label for="protocolo" class="form-label required">Número do Protocolo</label>
+                            <div class="input-group input-group-lg">
+                                <span class="input-group-text">
+                                    <i class="fas fa-ticket-alt"></i>
+                                </span>
+                                <input type="text"
+                                       class="form-control"
+                                       id="protocolo"
+                                       name="protocolo"
+                                       placeholder="Ex: 20250704120000123"
+                                       maxlength="20"
+                                       required />
+                            </div>
+                            <div class="form-text">
+                                O protocolo é composto por números e foi fornecido na criação do agendamento.
+                            </div>
+                        </div>
+
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-search me-2"></i>
+                                Consultar Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h6 class="card-title text-info">
+                                <i class="fas fa-info-circle me-2"></i>Como encontrar seu protocolo?
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>O protocolo foi exibido na tela após criar o agendamento</li>
+                                <li>É um número único composto por 17 dígitos</li>
+                                <li>Exemplo: 20250704120000123</li>
+                                <li>Se perdeu o protocolo, entre em contato com a administração</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Status Possíveis -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card">
+                        <div class="card-header">
+                            <h6 class="mb-0">
+                                <i class="fas fa-list me-2"></i>Status Possíveis
+                            </h6>
+                        </div>
+                        <div class="card-body">
+                            <div class="row g-3">
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-warning me-2">Pendente</span>
+                                        <small>Aguardando análise</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-success me-2">Aprovado</span>
+                                        <small>Veículo alocado</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-danger me-2">Rejeitado</span>
+                                        <small>Solicitação negada</small>
+                                    </div>
+                                </div>
+                                <div class="col-md-6">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-primary me-2">Em Andamento</span>
+                                        <small>Viagem em execução</small>
+                                    </div>
+                                </div>
+                                <div class="col-12">
+                                    <div class="d-flex align-items-center">
+                                        <span class="badge bg-secondary me-2">Concluído</span>
+                                        <small>Viagem finalizada</small>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botão Voltar -->
+            <div class="text-center mt-4">
+                <a asp-controller="Home" asp-action="Index" class="btn btn-outline-secondary">
+                    <i class="fas fa-arrow-left me-2"></i>Voltar à Página Inicial
+                </a>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto uppercase e formatação do protocolo
+            $('#protocolo').on('input', function() {
+                this.value = this.value.toUpperCase().replace(/[^A-Z0-9]/g, '');
+            });
+
+            // Foco automático no campo
+            $('#protocolo').focus();
+        });
+    </script>
+}

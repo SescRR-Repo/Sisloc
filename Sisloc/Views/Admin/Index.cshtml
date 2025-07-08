@@ -1,0 +1,382 @@
+﻿@model IEnumerable<Sisloc.Models.Agendamento>
+
+@{
+    ViewData["Title"] = "Dashboard Administrativo";
+
+    // Estatísticas para cards
+    var totalPendentes = Model.Count(a => a.Status == Sisloc.Models.Enums.StatusAgendamento.Pendente);
+    var totalAprovados = Model.Count(a => a.Status == Sisloc.Models.Enums.StatusAgendamento.Aprovado);
+    var totalRejeitados = Model.Count(a => a.Status == Sisloc.Models.Enums.StatusAgendamento.Rejeitado);
+    var totalHoje = Model.Count(a => a.DataCriacao.Date == DateTime.Today);
+
+    // Função para obter classe CSS do status
+    string GetStatusClass(Sisloc.Models.Enums.StatusAgendamento status)
+    {
+        return status switch
+        {
+            Sisloc.Models.Enums.StatusAgendamento.Pendente => "warning",
+            Sisloc.Models.Enums.StatusAgendamento.Aprovado => "success",
+            Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "danger",
+            Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "primary",
+            Sisloc.Models.Enums.StatusAgendamento.Concluido => "secondary",
+            _ => "secondary"
+        };
+    }
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-tachometer-alt me-2"></i>
+                    Dashboard Administrativo
+                </h2>
+                <div>
+                    <span class="badge bg-info">@DateTime.Now.ToString("dd/MM/yyyy HH:mm")</span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Cards de Estatísticas -->
+    <div class="row g-3 mb-4">
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-check-circle fa-2x text-success"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="fw-bold text-success">Aprovados</div>
+                            <div class="h4 mb-0">@totalAprovados</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-times-circle fa-2x text-danger"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="fw-bold text-danger">Rejeitados</div>
+                            <div class="h4 mb-0">@totalRejeitados</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6">
+            <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+                <div class="card-body">
+                    <div class="d-flex align-items-center">
+                        <div class="flex-shrink-0">
+                            <i class="fas fa-calendar-day fa-2x text-info"></i>
+                        </div>
+                        <div class="flex-grow-1 ms-3">
+                            <div class="fw-bold text-info">Hoje</div>
+                            <div class="h4 mb-0">@totalHoje</div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                Filtros
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" class="form-select" asp-items="ViewBag.StatusList">
+                            <option value="">Todos os status</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataInicio" class="form-label">Data Início</label>
+                        <input type="date" name="dataInicio" class="form-control" value="@ViewBag.DataInicio" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="dataFim" class="form-label">Data Fim</label>
+                        <input type="date" name="dataFim" class="form-control" value="@ViewBag.DataFim" />
+                    </div>
+                    <div class="col-md-3">
+                        <label for="categoria" class="form-label">Categoria</label>
+                        <select name="categoria" class="form-select" asp-items="ViewBag.CategoriasList">
+                            <option value="">Todas as categorias</option>
+                        </select>
+                    </div>
+                    <div class="col-12">
+                        <div class="d-flex gap-2">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-2"></i>Filtrar
+                            </button>
+                            <a href="@Url.Action("Index")" class="btn btn-outline-secondary">
+                                <i class="fas fa-times me-2"></i>Limpar
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Agendamentos -->
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Agendamentos (@Model.Count() registros)
+            </h5>
+            <div>
+                <button class="btn btn-sm btn-outline-primary" onclick="window.print()">
+                    <i class="fas fa-print me-1"></i>Imprimir
+                </button>
+            </div>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Protocolo</th>
+                                <th>Solicitante</th>
+                                <th>Destino</th>
+                                <th>Data Partida</th>
+                                <th>Categoria</th>
+                                <th>Status</th>
+                                <th>Criado em</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var agendamento in Model)
+                            {
+                                <tr>
+                                    <td>
+                                        <span class="protocol-display small">@agendamento.Protocolo</span>
+                                    </td>
+                                    <td>
+                                        <div class="fw-bold">@agendamento.NomeSolicitante</div>
+                                        <small class="text-muted">@agendamento.QuantidadePessoas pessoa(s)</small>
+                                    </td>
+                                    <td>
+                                        <span class="text-truncate d-inline-block" style="max-width: 150px;" title="@agendamento.Destino">
+                                            @agendamento.Destino
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>@agendamento.DataPartida.ToString("dd/MM/yyyy")</div>
+                                        <small class="text-muted">@agendamento.DataPartida.ToString("HH:mm")</small>
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            @agendamento.CategoriaVeiculo.ToString()
+                                        </span>
+                                        @if (agendamento.PrecisaMotorista)
+                                        {
+                                            <br>
+
+                                            <small class="text-success">
+                                                <i class="fas fa-user-tie me-1"></i>c/ Motorista
+                                            </small>
+                                        }
+                                    </td>
+                                    <td>
+                                        <span class="badge bg-@GetStatusClass(agendamento.Status) status-badge">
+                                            @agendamento.Status.ToString()
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <div>@agendamento.DataCriacao.ToString("dd/MM/yyyy")</div>
+                                        <small class="text-muted">@agendamento.DataCriacao.ToString("HH:mm")</small>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Detalhes" asp-route-id="@agendamento.Id"
+                                               class="btn btn-outline-primary" title="Ver detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            @if (agendamento.Status == Sisloc.Models.Enums.StatusAgendamento.Pendente)
+                                            {
+                                                <a asp-action="Detalhes" asp-route-id="@agendamento.Id"
+                                                   class="btn btn-outline-success" title="Aprovar/Reprovar">
+                                                    <i class="fas fa-check"></i>
+                                                </a>
+                                            }
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-inbox fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum agendamento encontrado</h5>
+                    <p class="text-muted">Não há agendamentos que correspondam aos filtros aplicados.</p>
+                    <a href="@Url.Action("Index")" class="btn btn-outline-primary">
+                        <i class="fas fa-refresh me-2"></i>Ver Todos
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+    <!-- Ações Rápidas -->
+    <div class="row mt-4">
+        <div class="col-12">
+            <div class="card border-primary">
+                <div class="card-header bg-primary text-white">
+                    <h6 class="mb-0">
+                        <i class="fas fa-bolt me-2"></i>
+                        Ações Rápidas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row g-3">
+                        <div class="col-md-3">
+                            <a href="@Url.Action("Index", new { status = (int)Sisloc.Models.Enums.StatusAgendamento.Pendente })"
+                               class="btn btn-warning w-100">
+                                <i class="fas fa-clock me-2"></i>
+                                Ver Pendentes (@totalPendentes)
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-success w-100" onclick="alert('Funcionalidade em desenvolvimento')">
+                                <i class="fas fa-car me-2"></i>
+                                Gerenciar Veículos
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-info w-100" onclick="alert('Funcionalidade em desenvolvimento')">
+                                <i class="fas fa-user-tie me-2"></i>
+                                Gerenciar Motoristas
+                            </a>
+                        </div>
+                        <div class="col-md-3">
+                            <a href="#" class="btn btn-secondary w-100" onclick="alert('Funcionalidade em desenvolvimento')">
+                                <i class="fas fa-chart-bar me-2"></i>
+                                Relatórios
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Auto-refresh a cada 30 segundos (opcional)
+            // setInterval(function() {
+            //     location.reload();
+            // }, 30000);
+
+            // Tooltips para botões
+            $('[title]').tooltip();
+
+            // Confirmar ações
+            $('.btn-danger').on('click', function(e) {
+                if (!confirm('Tem certeza que deseja executar esta ação?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}
+<!-- Cards de Estatísticas -->
+<div class="row g-3 mb-4">
+    <!-- Pendentes -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-clock fa-2x text-warning"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold text-warning">Pendentes</div>
+                        <div class="h4 mb-0">@totalPendentes</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Aprovados -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-check-circle fa-2x text-success"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold text-success">Aprovados</div>
+                        <div class="h4 mb-0">@totalAprovados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Rejeitados -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-times-circle fa-2x text-danger"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold text-danger">Rejeitados</div>
+                        <div class="h4 mb-0">@totalRejeitados</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Hoje -->
+    <div class="col-xl-3 col-md-6">
+        <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+            <div class="card-body">
+                <div class="d-flex align-items-center">
+                    <div class="flex-shrink-0">
+                        <i class="fas fa-calendar-day fa-2x text-info"></i>
+                    </div>
+                    <div class="flex-grow-1 ms-3">
+                        <div class="fw-bold text-info">Hoje</div>
+                        <div class="h4 mb-0">@totalHoje</div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>

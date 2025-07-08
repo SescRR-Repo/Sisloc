@@ -1,0 +1,288 @@
+﻿@model Sisloc.Models.Agendamento
+
+@{
+    ViewData["Title"] = "Detalhes do Agendamento";
+
+    // Função para obter classe CSS do status
+    string GetStatusClass(Sisloc.Models.Enums.StatusAgendamento status)
+    {
+        return status switch
+        {
+            Sisloc.Models.Enums.StatusAgendamento.Pendente => "warning",
+            Sisloc.Models.Enums.StatusAgendamento.Aprovado => "success",
+            Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "danger",
+            Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "primary",
+            Sisloc.Models.Enums.StatusAgendamento.Concluido => "secondary",
+            _ => "secondary"
+        };
+    }
+
+    string GetStatusIcon(Sisloc.Models.Enums.StatusAgendamento status)
+    {
+        return status switch
+        {
+            Sisloc.Models.Enums.StatusAgendamento.Pendente => "fas fa-clock",
+            Sisloc.Models.Enums.StatusAgendamento.Aprovado => "fas fa-check-circle",
+            Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "fas fa-times-circle",
+            Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "fas fa-car",
+            Sisloc.Models.Enums.StatusAgendamento.Concluido => "fas fa-flag-checkered",
+            _ => "fas fa-question-circle"
+        };
+    }
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header com Status -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary mb-3">
+                    <i class="fas fa-file-alt me-2"></i>
+                    Detalhes do Agendamento
+                </h2>
+                <div class="d-inline-block">
+                    <span class="badge bg-@GetStatusClass(Model.Status) status-badge">
+                        <i class="@GetStatusIcon(Model.Status) me-2"></i>
+                        @Model.Status.ToString()
+                    </span>
+                </div>
+            </div>
+
+            <!-- Card Principal -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-light">
+                    <div class="row align-items-center">
+                        <div class="col">
+                            <h5 class="mb-0">
+                                <i class="fas fa-ticket-alt me-2"></i>
+                                Protocolo: <span class="protocol-display">@Model.Protocolo</span>
+                            </h5>
+                        </div>
+                        <div class="col-auto">
+                            <small class="text-muted">
+                                <i class="fas fa-calendar me-1"></i>
+                                Criado em @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")
+                            </small>
+                        </div>
+                    </div>
+                </div>
+                <div class="card-body">
+
+                    <!-- Dados da Viagem -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-route me-2 text-primary"></i>
+                                Dados da Viagem
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-play me-2 text-success"></i>Partida:</strong><br>
+                            <span class="ms-3">@Model.DataPartida.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-stop me-2 text-danger"></i>Chegada:</strong><br>
+                            <span class="ms-3">@Model.DataChegada.ToString("dd/MM/yyyy HH:mm")</span>
+                        </div>
+                        <div class="col-12 mt-3">
+                            <strong><i class="fas fa-map-marker-alt me-2 text-info"></i>Destino:</strong><br>
+                            <span class="ms-3">@Model.Destino</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Descricao))
+                        {
+                            <div class="col-12 mt-3">
+                                <strong><i class="fas fa-comment me-2 text-secondary"></i>Descrição:</strong><br>
+                                <span class="ms-3">@Model.Descricao</span>
+                            </div>
+                        }
+                    </div>
+
+                    <!-- Dados do Solicitante -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-user me-2 text-primary"></i>
+                                Solicitante
+                            </h6>
+                        </div>
+                        <div class="col-md-8">
+                            <strong><i class="fas fa-user-circle me-2"></i>Nome:</strong><br>
+                            <span class="ms-3">@Model.NomeSolicitante</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-users me-2"></i>Passageiros:</strong><br>
+                            <span class="ms-3">@Model.QuantidadePessoas pessoa(s)</span>
+                        </div>
+                    </div>
+
+                    <!-- Especificações do Veículo -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-car me-2 text-primary"></i>
+                                Especificações do Veículo
+                            </h6>
+                        </div>
+                        <div class="col-md-8">
+                            <strong><i class="fas fa-tags me-2"></i>Categoria:</strong><br>
+                            <span class="ms-3">@Model.CategoriaVeiculo.ToString()</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-user-tie me-2"></i>Motorista:</strong><br>
+                            <span class="ms-3">
+                                @if (Model.PrecisaMotorista)
+                                {
+                                    <span class="text-success">
+                                        <i class="fas fa-check me-1"></i>Solicitado
+                                    </span>
+                                }
+                                else
+                                {
+                                    <span class="text-muted">
+                                        <i class="fas fa-times me-1"></i>Não solicitado
+                                    </span>
+                                }
+                            </span>
+                        </div>
+                    </div>
+
+                    <!-- Recursos Alocados (apenas se aprovado) -->
+                    @if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Aprovado ||
+                    Model.Status == Sisloc.Models.Enums.StatusAgendamento.EmAndamento ||
+                    Model.Status == Sisloc.Models.Enums.StatusAgendamento.Concluido)
+                    {
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-check-circle me-2 text-success"></i>
+                                    Recursos Alocados
+                                </h6>
+                            </div>
+
+                            @if (Model.VeiculoAlocado != null)
+                            {
+                                <div class="col-md-6">
+                                    <div class="card border-success">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-success">
+                                                <i class="fas fa-car me-2"></i>Veículo
+                                            </h6>
+                                            <p class="card-text mb-1">
+                                                <strong>Modelo:</strong> @Model.VeiculoAlocado.Modelo<br>
+                                                <strong>Placa:</strong> @Model.VeiculoAlocado.Placa<br>
+                                                <strong>Capacidade:</strong> @Model.VeiculoAlocado.CapacidadePassageiros pessoas
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+
+                            @if (Model.MotoristaAlocado != null)
+                            {
+                                <div class="col-md-6">
+                                    <div class="card border-info">
+                                        <div class="card-body">
+                                            <h6 class="card-title text-info">
+                                                <i class="fas fa-user-tie me-2"></i>Motorista
+                                            </h6>
+                                            <p class="card-text mb-1">
+                                                <strong>Nome:</strong> @Model.MotoristaAlocado.NomeCompleto<br>
+                                                <strong>Telefone:</strong> @Model.MotoristaAlocado.Telefone<br>
+                                                <strong>CNH:</strong> Categoria @Model.MotoristaAlocado.CategoriaCnh
+                                            </p>
+                                        </div>
+                                    </div>
+                                </div>
+                            }
+                        </div>
+                    }
+
+                    <!-- Observações Administrativas -->
+                    @if (!string.IsNullOrEmpty(Model.ObservacoesAdmin))
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="alert alert-@GetStatusClass(Model.Status)">
+                                    <h6>
+                                        <i class="fas fa-comment-alt me-2"></i>
+                                        Observações da Administração
+                                    </h6>
+                                    <p class="mb-0">@Model.ObservacoesAdmin</p>
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <!-- Timeline de Status (informativo) -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-history me-2"></i>
+                        Histórico do Status
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="timeline">
+                        <div class="timeline-item">
+                            <span class="badge bg-secondary rounded-pill">
+                                <i class="fas fa-plus"></i>
+                            </span>
+                            <span class="ms-3">
+                                <strong>Criado</strong> em @Model.DataCriacao.ToString("dd/MM/yyyy HH:mm")
+                            </span>
+                        </div>
+
+                        @if (Model.Status != Sisloc.Models.Enums.StatusAgendamento.Pendente)
+                        {
+                            <div class="timeline-item">
+                                <span class="badge bg-@GetStatusClass(Model.Status) rounded-pill">
+                                    <i class="@GetStatusIcon(Model.Status)"></i>
+                                </span>
+                                <span class="ms-3">
+                                    <strong>@Model.Status.ToString()</strong>
+                                </span>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="text-center">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a class="btn btn-outline-primary" asp-controller="Consulta" asp-action="Index">
+                        <i class="fas fa-search me-2"></i>Nova Consulta
+                    </a>
+                    <a class="btn btn-primary" asp-controller="Agendamento" asp-action="Index">
+                        <i class="fas fa-plus me-2"></i>Novo Agendamento
+                    </a>
+                    <a class="btn btn-outline-secondary" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-home me-2"></i>Página Inicial
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<style>
+    .timeline {
+        position: relative;
+        padding: 0;
+    }
+
+    .timeline-item {
+        display: flex;
+        align-items: center;
+        margin-bottom: 1rem;
+    }
+
+        .timeline-item:last-child {
+            margin-bottom: 0;
+        }
+</style>

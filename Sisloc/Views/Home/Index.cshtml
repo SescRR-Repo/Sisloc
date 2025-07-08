@@ -1,0 +1,196 @@
+﻿@{
+    ViewData["Title"] = "Sistema de Agendamento de Veículos";
+}
+
+<!-- Hero Section -->
+<section class="hero-section">
+    <div class="container">
+        <div class="row align-items-center">
+            <div class="col-lg-6">
+                <h1 class="display-4 fw-bold mb-4">
+                    <i class="fas fa-car-side me-3"></i>
+                    Sistema de Agendamento de Veículos
+                </h1>
+                <p class="lead mb-4">
+                    Solicite veículos de forma rápida e simples. Acompanhe o status do seu agendamento em tempo real.
+                </p>
+                <div class="d-grid gap-3 d-md-flex">
+                    <a class="btn btn-light btn-lg px-4" asp-controller="Agendamento" asp-action="Index">
+                        <i class="fas fa-plus-circle me-2"></i>
+                        Fazer Agendamento
+                    </a>
+                    <a class="btn btn-outline-light btn-lg px-4" asp-controller="Consulta" asp-action="Index">
+                        <i class="fas fa-search me-2"></i>
+                        Consultar Status
+                    </a>
+                </div>
+            </div>
+            <div class="col-lg-6 text-center">
+                <i class="fas fa-calendar-check" style="font-size: 8rem; opacity: 0.3;"></i>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Cards de Funcionalidades -->
+<section class="py-5">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col">
+                <h2 class="fw-bold">Como Funciona</h2>
+                <p class="text-muted">Processo simples em 3 passos</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Passo 1 -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-hover">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-primary text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-edit fa-lg"></i>
+                        </div>
+                        <h5 class="card-title">1. Preencha o Formulário</h5>
+                        <p class="card-text text-muted">
+                            Informe os dados da viagem: destino, data, horário e categoria do veículo necessário.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 2 -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-hover">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-warning text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-clock fa-lg"></i>
+                        </div>
+                        <h5 class="card-title">2. Aguarde Aprovação</h5>
+                        <p class="card-text text-muted">
+                            Nossa equipe analisará sua solicitação e alocará um veículo adequado às suas necessidades.
+                        </p>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Passo 3 -->
+            <div class="col-md-4">
+                <div class="card h-100 border-0 shadow-sm card-hover">
+                    <div class="card-body text-center p-4">
+                        <div class="rounded-circle bg-success text-white d-inline-flex align-items-center justify-content-center mb-3" style="width: 60px; height: 60px;">
+                            <i class="fas fa-check-circle fa-lg"></i>
+                        </div>
+                        <h5 class="card-title">3. Utilize o Veículo</h5>
+                        <p class="card-text text-muted">
+                            Após a aprovação, você receberá as informações do veículo e motorista (se solicitado).
+                        </p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Categorias de Veículos -->
+<section class="py-5 bg-light">
+    <div class="container">
+        <div class="row text-center mb-5">
+            <div class="col">
+                <h2 class="fw-bold">Categorias de Veículos Disponíveis</h2>
+                <p class="text-muted">Escolha o veículo ideal para sua necessidade</p>
+            </div>
+        </div>
+
+        <div class="row g-4">
+            <!-- Hatch -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm text-center card-hover">
+                    <div class="card-body p-3">
+                        <i class="fas fa-car text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="card-title mb-1">Hatch</h6>
+                        <small class="text-muted">Econômico</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Sedan -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm text-center card-hover">
+                    <div class="card-body p-3">
+                        <i class="fas fa-car-side text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="card-title mb-1">Sedan</h6>
+                        <small class="text-muted">Conforto</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Caminhonete -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm text-center card-hover">
+                    <div class="card-body p-3">
+                        <i class="fas fa-truck text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="card-title mb-1">Caminhonete</h6>
+                        <small class="text-muted">Versátil</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Pickup -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm text-center card-hover">
+                    <div class="card-body p-3">
+                        <i class="fas fa-truck-pickup text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="card-title mb-1">Pickup</h6>
+                        <small class="text-muted">Robusta</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Caminhão -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm text-center card-hover">
+                    <div class="card-body p-3">
+                        <i class="fas fa-truck-moving text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="card-title mb-1">Caminhão</h6>
+                        <small class="text-muted">Carga</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Info -->
+            <div class="col-lg-2 col-md-4 col-sm-6">
+                <div class="card border-primary text-center card-hover">
+                    <div class="card-body p-3">
+                        <i class="fas fa-info-circle text-primary mb-2" style="font-size: 2rem;"></i>
+                        <h6 class="card-title mb-1 text-primary">Dúvidas?</h6>
+                        <small class="text-muted">Entre em contato</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<!-- Call to Action -->
+<section class="py-5">
+    <div class="container">
+        <div class="row">
+            <div class="col-lg-8 mx-auto text-center">
+                <h3 class="fw-bold mb-3">Pronto para solicitar seu veículo?</h3>
+                <p class="text-muted mb-4">
+                    O processo é rápido e simples. Em poucos minutos você terá seu protocolo de agendamento.
+                </p>
+                <div class="d-grid gap-3 d-md-flex justify-content-md-center">
+                    <a class="btn btn-primary btn-lg px-5" asp-controller="Agendamento" asp-action="Index">
+                        <i class="fas fa-calendar-plus me-2"></i>
+                        Solicitar Agendamento
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg px-5" asp-controller="Consulta" asp-action="Index">
+                        <i class="fas fa-search me-2"></i>
+                        Consultar Existente
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>

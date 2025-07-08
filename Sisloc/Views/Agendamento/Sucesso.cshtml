@@ -1,0 +1,146 @@
+﻿@{
+    ViewData["Title"] = "Agendamento Criado com Sucesso";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Sucesso -->
+            <div class="text-center mb-4">
+                <div class="mb-4">
+                    <i class="fas fa-check-circle text-success" style="font-size: 5rem;"></i>
+                </div>
+                <h2 class="fw-bold text-success mb-3">
+                    Agendamento Criado com Sucesso!
+                </h2>
+                <p class="lead text-muted">
+                    Sua solicitação foi recebida e está sendo analisada pela nossa equipe.
+                </p>
+            </div>
+
+            <!-- Card com Protocolo -->
+            <div class="card shadow-sm border-success mb-4">
+                <div class="card-header bg-success text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-ticket-alt me-2"></i>
+                        Protocolo do Agendamento
+                    </h5>
+                </div>
+                <div class="card-body text-center">
+                    <h3 class="protocol-display mb-3">@ViewBag.Protocolo</h3>
+                    <p class="text-muted mb-3">
+                        <strong>Importante:</strong> Anote este protocolo para consultar o status do seu agendamento.
+                    </p>
+                    <div class="row">
+                        <div class="col-md-6 mb-2">
+                            <button class="btn btn-outline-primary btn-sm w-100" onclick="copiarProtocolo()">
+                                <i class="fas fa-copy me-2"></i>Copiar Protocolo
+                            </button>
+                        </div>
+                        <div class="col-md-6 mb-2">
+                            <a class="btn btn-primary btn-sm w-100"
+                               asp-controller="Consulta"
+                               asp-action="Protocolo"
+                               asp-route-protocolo="@ViewBag.Protocolo">
+                                <i class="fas fa-search me-2"></i>Consultar Status
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Próximos Passos -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-list-ol me-2"></i>
+                        Próximos Passos
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <ol class="list-unstyled">
+                        <li class="d-flex mb-3">
+                            <div class="rounded-circle bg-primary text-white me-3 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 0.9rem;">
+                                1
+                            </div>
+                            <div>
+                                <strong>Análise da Solicitação</strong><br>
+                                <small class="text-muted">Nossa equipe verificará a disponibilidade de veículos para o período solicitado.</small>
+                            </div>
+                        </li>
+                        <li class="d-flex mb-3">
+                            <div class="rounded-circle bg-warning text-white me-3 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 0.9rem;">
+                                2
+                            </div>
+                            <div>
+                                <strong>Aprovação e Alocação</strong><br>
+                                <small class="text-muted">Se aprovado, será alocado um veículo e motorista (se solicitado) para sua viagem.</small>
+                            </div>
+                        </li>
+                        <li class="d-flex mb-3">
+                            <div class="rounded-circle bg-success text-white me-3 d-flex align-items-center justify-content-center" style="width: 30px; height: 30px; font-size: 0.9rem;">
+                                3
+                            </div>
+                            <div>
+                                <strong>Notificação</strong><br>
+                                <small class="text-muted">Você será notificado sobre o status do agendamento através do protocolo.</small>
+                            </div>
+                        </li>
+                    </ol>
+                </div>
+            </div>
+
+            <!-- Informações Importantes -->
+            <div class="alert alert-info">
+                <h6><i class="fas fa-info-circle me-2"></i>Informações Importantes</h6>
+                <ul class="mb-0 small">
+                    <li>O tempo médio de análise é de 2 a 4 horas em dias úteis</li>
+                    <li>Você pode consultar o status a qualquer momento usando o protocolo</li>
+                    <li>Em caso de aprovação, você receberá as informações do veículo e motorista</li>
+                    <li>Para alterações ou cancelamentos, entre em contato com a administração</li>
+                </ul>
+            </div>
+
+            <!-- Botões de Ação -->
+            <div class="text-center">
+                <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                    <a class="btn btn-primary btn-lg px-4" asp-controller="Agendamento" asp-action="Index">
+                        <i class="fas fa-plus me-2"></i>Novo Agendamento
+                    </a>
+                    <a class="btn btn-outline-primary btn-lg px-4" asp-controller="Home" asp-action="Index">
+                        <i class="fas fa-home me-2"></i>Página Inicial
+                    </a>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<script>
+    function copiarProtocolo() {
+        var protocolo = '@ViewBag.Protocolo';
+
+        // Criar elemento temporário para copiar
+        var temp = document.createElement('textarea');
+        temp.value = protocolo;
+        document.body.appendChild(temp);
+        temp.select();
+        document.execCommand('copy');
+        document.body.removeChild(temp);
+
+        // Feedback visual
+        var botao = event.target;
+        var textoOriginal = botao.innerHTML;
+        botao.innerHTML = '<i class="fas fa-check me-2"></i>Copiado!';
+        botao.classList.remove('btn-outline-primary');
+        botao.classList.add('btn-success');
+
+        setTimeout(function() {
+            botao.innerHTML = textoOriginal;
+            botao.classList.remove('btn-success');
+            botao.classList.add('btn-outline-primary');
+        }, 2000);
+    }
+</script>
