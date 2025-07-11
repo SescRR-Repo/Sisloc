@@ -1,7 +1,13 @@
 using Microsoft.EntityFrameworkCore;
 using Sisloc.Data;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuração de cultura e fuso horário para o Brasil
+var cultureInfo = new CultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Configuração do Entity Framework para .NET 8
 builder.Services.AddDbContext<SislocDbContext>(options =>

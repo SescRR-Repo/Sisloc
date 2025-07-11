@@ -12,6 +12,7 @@
             Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "danger",
             Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "primary",
             Sisloc.Models.Enums.StatusAgendamento.Concluido => "secondary",
+            Sisloc.Models.Enums.StatusAgendamento.Cancelado => "dark",
             _ => "secondary"
         };
     }
@@ -288,6 +289,152 @@
                 </div>
             }
 
+            @if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Aprovado)
+            {
+                <!-- Ações para Agendamentos Aprovados -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-play me-2"></i>
+                            Controle da Viagem
+                        </h5>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Iniciar Viagem -->
+                        <form asp-action="IniciarViagem" method="post" class="mb-3">
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <button type="submit" class="btn btn-primary w-100 mb-3"
+                                    onclick="return confirmarAcao('Confirma o início desta viagem?')">
+                                <i class="fas fa-play me-2"></i>Iniciar Viagem
+                            </button>
+                        </form>
+
+                        <hr>
+
+                        <!-- Cancelar -->
+                        <form asp-action="Cancelar" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <h6 class="text-dark">
+                                <i class="fas fa-ban me-2"></i>Cancelar Agendamento
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label required">Motivo do Cancelamento</label>
+                                <textarea name="observacoesAdmin" class="form-control" rows="3"
+                                          placeholder="Informe o motivo do cancelamento..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-dark w-100"
+                                    onclick="return confirmarAcao('Confirma o cancelamento deste agendamento? Os recursos serão liberados.')">
+                                <i class="fas fa-ban me-2"></i>Cancelar Agendamento
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            }
+
+            @if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.EmAndamento)
+            {
+                <!-- Ações para Viagens em Andamento -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-car me-2"></i>
+                            Viagem em Andamento
+                        </h5>
+                    </div>
+                    <div class="card-body">
+
+                        <!-- Concluir Viagem -->
+                        <form asp-action="ConcluirViagem" method="post" class="mb-3">
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <h6 class="text-success">
+                                <i class="fas fa-flag-checkered me-2"></i>Concluir Viagem
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label">Observações Finais</label>
+                                <textarea name="observacoesAdmin" class="form-control" rows="3"
+                                          placeholder="Observações sobre a conclusão da viagem (opcional)"></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-success w-100 mb-3"
+                                    onclick="return confirmarAcao('Confirma a conclusão desta viagem?')">
+                                <i class="fas fa-flag-checkered me-2"></i>Concluir Viagem
+                            </button>
+                        </form>
+
+                        <hr>
+
+                        <!-- Cancelar (emergência) -->
+                        <form asp-action="Cancelar" method="post">
+                            <input type="hidden" name="id" value="@Model.Id" />
+
+                            <h6 class="text-dark">
+                                <i class="fas fa-exclamation-triangle me-2"></i>Cancelamento de Emergência
+                            </h6>
+
+                            <div class="mb-3">
+                                <label class="form-label required">Motivo do Cancelamento</label>
+                                <textarea name="observacoesAdmin" class="form-control" rows="3"
+                                          placeholder="Informe o motivo do cancelamento de emergência..." required></textarea>
+                            </div>
+
+                            <button type="submit" class="btn btn-dark w-100"
+                                    onclick="return confirmarAcao('ATENÇÃO: Confirma o cancelamento de emergência desta viagem em andamento?')">
+                                <i class="fas fa-ban me-2"></i>Cancelar por Emergência
+                            </button>
+                        </form>
+
+                    </div>
+                </div>
+            }
+
+            @if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Cancelado ||
+            Model.Status == Sisloc.Models.Enums.StatusAgendamento.Rejeitado ||
+            Model.Status == Sisloc.Models.Enums.StatusAgendamento.Concluido)
+            {
+                <!-- Status Final -->
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-@GetStatusClass(Model.Status) text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-info-circle me-2"></i>
+                            Status: @Model.Status.ToString()
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <p class="mb-0">
+                            @if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Cancelado)
+                            {
+                                <span class="text-muted">
+                                    <i class="fas fa-ban me-2"></i>
+                                    Este agendamento foi cancelado. Os recursos foram liberados automaticamente.
+                                </span>
+                            }
+                            else if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Rejeitado)
+                            {
+                                <span class="text-muted">
+                                    <i class="fas fa-times-circle me-2"></i>
+                                    Este agendamento foi rejeitado. Nenhum recurso foi alocado.
+                                </span>
+                            }
+                            else if (Model.Status == Sisloc.Models.Enums.StatusAgendamento.Concluido)
+                            {
+                                <span class="text-muted">
+                                    <i class="fas fa-check-circle me-2"></i>
+                                    Esta viagem foi concluída com sucesso. Os recursos foram liberados.
+                                </span>
+                            }
+                        </p>
+                    </div>
+                </div>
+            }
+
             <!-- Informações do Sistema -->
             <div class="card shadow-sm mb-4">
                 <div class="card-header">
@@ -358,11 +505,12 @@
                     }
                 }
 
-                // Validar motivo para reprovação
-                if (form.attr('action').includes('Reprovar')) {
+                // Validar motivo para reprovação e cancelamento
+                if (form.attr('action').includes('Reprovar') || form.attr('action').includes('Cancelar')) {
                     var observacoes = form.find('textarea[name="observacoesAdmin"]').val().trim();
                     if (!observacoes) {
-                        alert('Por favor, informe o motivo da reprovação.');
+                        var acao = form.attr('action').includes('Reprovar') ? 'reprovação' : 'cancelamento';
+                        alert('Por favor, informe o motivo da ' + acao + '.');
                         e.preventDefault();
                         return false;
                     }

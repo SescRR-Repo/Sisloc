@@ -13,6 +13,8 @@ namespace Sisloc.Models.Enums
         [Display(Name = "Em Andamento")]
         EmAndamento = 4,
         [Display(Name = "Concluído")]
-        Concluido = 5
+        Concluido = 5,
+        [Display(Name = "Cancelado")]
+        Cancelado = 6
     }
 }

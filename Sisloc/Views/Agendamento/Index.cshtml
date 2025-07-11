@@ -60,7 +60,7 @@
                         <div class="row mb-4">
                             <div class="col-12">
                                 <label asp-for="Descricao" class="form-label"></label>
-                                <textarea asp-for="Descricao" class="form-control" rows="3" 
+                                <textarea asp-for="Descricao" class="form-control" rows="3"
                                           placeholder="Descreva o objetivo da viagem (opcional)"></textarea>
                                 <span asp-validation-for="Descricao" class="text-danger"></span>
                             </div>
@@ -112,7 +112,7 @@
                             <div class="col-md-4">
                                 <label class="form-label">&nbsp;</label>
                                 <div class="form-check mt-2">
-                                    <input asp-for="PrecisaMotorista" class="form-check-input" type="checkbox" />
+                                    <input asp-for="PrecisaMotorista" class="form-check-input" type="checkbox" checked />
                                     <label asp-for="PrecisaMotorista" class="form-check-label">
                                         Precisa de motorista
                                     </label>
@@ -186,51 +186,115 @@
         await Html.RenderPartialAsync("_ValidationScriptsPartial");
     }
 
-        <script>
-            $(document).ready(function() {
-                // Definir valores padrão para datas
-                var agora = new Date();
-                var amanha = new Date(agora);
+    <script>
+        $(document).ready(function() {
+            // Função para obter data/hora local formatada para datetime-local
+            function getLocalDateTime(offsetMinutes = 0) {
+                var now = new Date();
+                now.setMinutes(now.getMinutes() + offsetMinutes);
+
+                // Formatação para datetime-local (YYYY-MM-DDTHH:MM)
+                var year = now.getFullYear();
+                var month = String(now.getMonth() + 1).padStart(2, '0');
+                var day = String(now.getDate()).padStart(2, '0');
+                var hours = String(now.getHours()).padStart(2, '0');
+                var minutes = String(now.getMinutes()).padStart(2, '0');
+
+                return `${year}-${month}-${day}T${hours}:${minutes}`;
+            }
+
+            // Definir valores padrão usando horário local
+            var $dataPartida = $('#DataPartida');
+            var $dataChegada = $('#DataChegada');
+
+            // Se os campos estão vazios, definir valores padrão
+            if (!$dataPartida.val()) {
+                // Amanhã às 8:00 (ou próxima hora se já passou)
+                var amanha = new Date();
                 amanha.setDate(amanha.getDate() + 1);
                 amanha.setHours(8, 0, 0, 0);
 
-                var retorno = new Date(amanha);
-                retorno.setHours(17, 0, 0, 0);
-
-                // Aplicar se os campos estiverem vazios
-                if (!$('#DataPartida').val()) {
-                    $('#DataPartida').val(amanha.toISOString().slice(0, 16));
-                }
-                if (!$('#DataChegada').val()) {
-                    $('#DataChegada').val(retorno.toISOString().slice(0, 16));
+                // Se amanhã 8h já passou, usar horário atual + 2 horas
+                var agora = new Date();
+                if (amanha <= agora) {
+                    amanha = new Date(agora.getTime() + (2 * 60 * 60 * 1000)); // +2 horas
                 }
 
-                // Validação em tempo real
-                $('#DataPartida, #DataChegada').on('change', function() {
-                    var partida = new Date($('#DataPartida').val());
-                    var chegada = new Date($('#DataChegada').val());
-                    var hoje = new Date();
+                $dataPartida.val(getLocalDateTime((amanha.getTime() - agora.getTime()) / 60000));
+            }
 
-                    if (partida < hoje) {
-                        alert('A data de partida não pode ser anterior ao momento atual.');
-                        $(this).focus();
-                        return;
-                    }
+            if (!$dataChegada.val()) {
+                // 4 horas após a partida
+                var partida = new Date($dataPartida.val());
+                partida.setHours(partida.getHours() + 4);
+                $dataChegada.val(getLocalDateTime((partida.getTime() - new Date().getTime()) / 60000));
+            }
 
-                    if (chegada <= partida) {
-                        alert('A data de chegada deve ser posterior à data de partida.');
-                        $('#DataChegada').focus();
-                        return;
-                    }
-                });
+            // Definir data mínima como agora (horário local)
+            var agora = getLocalDateTime(1); // 1 minuto no futuro
+            $dataPartida.attr('min', agora);
+            $dataChegada.attr('min', agora);
 
-                // Confirmar antes de enviar
-                $('#agendamentoForm').on('submit', function(e) {
-                    var confirmacao = confirm('Confirma o envio da solicitação de agendamento?');
-                    if (!confirmacao) {
-                        e.preventDefault();
-                    }
-                });
+            // Validação em tempo real
+            function validarHorarios() {
+                var partida = new Date($dataPartida.val());
+                var chegada = new Date($dataChegada.val());
+                var agora = new Date();
+
+                // Limpar mensagens anteriores
+                $('.field-validation-error').hide();
+
+                if (partida <= agora) {
+                    $dataPartida.addClass('is-invalid');
+                    return false;
+                } else {
+                    $dataPartida.removeClass('is-invalid');
+                }
+
+                if (chegada <= partida) {
+                    $dataChegada.addClass('is-invalid');
+                    return false;
+                } else {
+                    $dataChegada.removeClass('is-invalid');
+                }
+
+                return true;
+            }
+
+            $dataPartida.on('change', function() {
+                validarHorarios();
+                // Atualizar data mínima de chegada
+                $dataChegada.attr('min', $(this).val());
             });
-        </script>
+
+            $dataChegada.on('change', validarHorarios);
+
+            // Confirmar antes de enviar
+            $('#agendamentoForm').on('submit', function(e) {
+                if (!validarHorarios()) {
+                    e.preventDefault();
+                    alert('Por favor, verifique as datas e horários informados.');
+                    return false;
+                }
+
+                var confirmacao = confirm('Confirma o envio da solicitação de agendamento?');
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Mostrar loading
+                var $submitBtn = $(this).find('button[type="submit"]');
+                var originalText = $submitBtn.html();
+                $submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Enviando...');
+                $submitBtn.prop('disabled', true);
+
+                // Restaurar botão em caso de erro (backup)
+                setTimeout(() => {
+                    $submitBtn.html(originalText);
+                    $submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+        });
+    </script>
 }
