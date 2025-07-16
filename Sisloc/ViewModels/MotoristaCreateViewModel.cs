@@ -39,6 +39,7 @@ namespace Sisloc.ViewModels
         [Required(ErrorMessage = "A data do exame toxicológico é obrigatória")]
         [Display(Name = "Data do Exame Toxicológico")]
         [DataType(DataType.Date)]
+        // ✅ CORREÇÃO: Data do exame deve ser no passado (máximo hoje)
         public DateTime DataExameToxicologico { get; set; } = DateTime.Now.AddMonths(-6);
 
         [Display(Name = "Status")]
@@ -52,6 +53,10 @@ namespace Sisloc.ViewModels
         public int DiasParaVencimentoCnh => (VencimentoCnh - DateTime.Now).Days;
         public int DiasParaVencimentoExameTox => (DataExameToxicologico.AddYears(2) - DateTime.Now).Days;
         public bool TemAlertaVencimento => DiasParaVencimentoCnh <= 30 || DiasParaVencimentoExameTox <= 60;
+
+        // ✅ NOVA VALIDAÇÃO: Verificar se data do exame é válida
+        public bool DataExameValida => DataExameToxicologico.Date <= DateTime.Now.Date;
+        public bool ExameVencido => DiasParaVencimentoExameTox < 0;
 
         public string GetAlertaVencimento()
         {
@@ -73,6 +78,24 @@ namespace Sisloc.ViewModels
             if (DiasParaVencimentoCnh <= 30 || DiasParaVencimentoExameTox <= 60)
                 return "warning";
             return "success";
+        }
+
+        // ✅ NOVO MÉTODO: Validar data do exame
+        public List<string> ValidarDataExame()
+        {
+            var erros = new List<string>();
+
+            if (DataExameToxicologico.Date > DateTime.Now.Date)
+            {
+                erros.Add("A data do exame toxicológico não pode ser futura");
+            }
+
+            if (DataExameToxicologico.Date < DateTime.Now.Date.AddYears(-5))
+            {
+                erros.Add("A data do exame toxicológico não pode ser anterior a 5 anos");
+            }
+
+            return erros;
         }
     }
 }

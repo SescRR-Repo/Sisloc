@@ -1,0 +1,484 @@
+﻿@model Sisloc.ViewModels.MotoristaDetailsViewModel
+@using Sisloc.Models.Enums
+
+@{
+    ViewData["Title"] = "Detalhes do Motorista";
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <div>
+                    <h2 class="fw-bold text-primary mb-1">
+                        <i class="fas fa-user-tie me-2"></i>
+                        Detalhes do Motorista
+                    </h2>
+                    <p class="text-muted mb-0">Informações completas e histórico de agendamentos</p>
+                </div>
+                <div>
+                    @{
+                        var statusClass = Model.Motorista.Status switch
+                        {
+                            Sisloc.Models.Enums.StatusMotorista.Disponivel => "success",
+                            Sisloc.Models.Enums.StatusMotorista.Ocupado => "primary",
+                            Sisloc.Models.Enums.StatusMotorista.Folga => "secondary",
+                            Sisloc.Models.Enums.StatusMotorista.Irregular => "danger",
+                            _ => "secondary"
+                        };
+                    }
+                    <span class="badge bg-@statusClass status-badge fs-6">
+                        @Model.Motorista.Status.ToString()
+                    </span>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Coluna Principal - Dados do Motorista -->
+        <div class="col-lg-8">
+
+            <!-- Alerta de Vencimento -->
+            @if (Model.TemAlertaVencimento)
+            {
+                <div class="card shadow-sm mb-4 border-@Model.ClasseStatusDocumentacao">
+                    <div class="card-header bg-@Model.ClasseStatusDocumentacao text-white">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Alertas de Documentação
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <ul class="mb-0">
+                            @foreach (var alerta in Model.GetAlertasDocumentacao())
+                            {
+                                <li>@alerta</li>
+                            }
+                        </ul>
+                    </div>
+                </div>
+            }
+
+            <!-- Dados Pessoais -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user me-2"></i>
+                        Dados Pessoais
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-8">
+                            <strong><i class="fas fa-user-circle me-2"></i>Nome Completo:</strong><br>
+                            <span class="ms-3 fs-5">@Model.Motorista.NomeCompleto</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong><i class="fas fa-phone me-2"></i>Telefone:</strong><br>
+                            <span class="ms-3">
+                                <a href="tel:@Model.Motorista.Telefone" class="text-decoration-none">
+                                    @Model.Motorista.Telefone
+                                </a>
+                            </span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Dados da CNH -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-id-card me-2"></i>
+                        Dados da CNH
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-credit-card me-2"></i>Número da CNH:</strong><br>
+                            <span class="ms-3 protocol-display">@Model.Motorista.NumeroCnh</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-certificate me-2"></i>Categoria:</strong><br>
+                            <span class="ms-3">
+                                <span class="badge bg-primary">@Model.Motorista.CategoriaCnh</span>
+                                @if (Model.GetCategoriasCompativeis().Any())
+                                {
+                                    <br>
+
+                                    <small class="text-muted ms-3">
+                                        Compatível com: @string.Join(", ", Model.GetCategoriasCompativeis())
+                                    </small>
+                                }
+                            </span>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <strong><i class="fas fa-calendar-alt me-2"></i>Vencimento:</strong><br>
+                            <span class="ms-3">@Model.Motorista.VencimentoCnh.ToString("dd/MM/yyyy")</span>
+                            @if (Model.CnhVenceEm <= 30)
+                            {
+                                <br>
+
+                                <small class="text-@(Model.CnhVencida ? "danger" : "warning") ms-3">
+                                    @(Model.CnhVencida ? $"Vencida há {Math.Abs(Model.CnhVenceEm)} dias" : $"Vence em {Model.CnhVenceEm} dias")
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Exame Toxicológico -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h5 class="mb-0">
+                        <i class="fas fa-flask me-2"></i>
+                        Exame Toxicológico
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-calendar me-2"></i>Data do Exame:</strong><br>
+                            <span class="ms-3">@Model.Motorista.DataExameToxicologico.ToString("dd/MM/yyyy")</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-calendar-check me-2"></i>Válido até:</strong><br>
+                            <span class="ms-3">@Model.Motorista.DataExameToxicologico.AddYears(2).ToString("dd/MM/yyyy")</span>
+                            @if (Model.ExameToxicologicoVenceEm <= 60)
+                            {
+                                <br>
+
+                                <small class="text-@(Model.ExameToxVencido ? "danger" : "warning") ms-3">
+                                    @(Model.ExameToxVencido ? $"Vencido há {Math.Abs(Model.ExameToxicologicoVenceEm)} dias" : $"Vence em {Model.ExameToxicologicoVenceEm} dias")
+                                </small>
+                            }
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Observações -->
+            @if (!string.IsNullOrEmpty(Model.Motorista.Observacoes))
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-comment-alt me-2"></i>
+                            Observações
+                        </h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-info mb-0">
+                            @Model.Motorista.Observacoes
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Agendamentos Ativos -->
+            @if (Model.AgendamentosAtivos.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-primary text-white">
+                        <h5 class="mb-0">
+                            <i class="fas fa-calendar-day me-2"></i>
+                            Agendamentos Ativos (@Model.AgendamentosAtivos.Count)
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-striped mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Protocolo</th>
+                                        <th>Partida</th>
+                                        <th>Destino</th>
+                                        <th>Veículo</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var agendamento in Model.AgendamentosAtivos)
+                                    {
+                                        <tr>
+                                            <td>
+                                                <span class="protocol-display small">@agendamento.Protocolo</span>
+                                            </td>
+                                            <td>@agendamento.DataPartida.ToString("dd/MM/yyyy HH:mm")</td>
+                                            <td>@agendamento.Destino</td>
+                                            <td>
+                                                @if (agendamento.VeiculoAlocado != null)
+                                                {
+                                                    <span>@agendamento.VeiculoAlocado.Modelo</span>
+
+                                                    <br>
+                                                    <small class="text-muted">@agendamento.VeiculoAlocado.Placa</small>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">Não alocado</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusAgendamentoClass = agendamento.Status switch
+                                                    {
+                                                        Sisloc.Models.Enums.StatusAgendamento.Pendente => "warning",
+                                                        Sisloc.Models.Enums.StatusAgendamento.Aprovado => "success",
+                                                        Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "primary",
+                                                        _ => "secondary"
+                                                    };
+                                                }
+                                                <span class="badge bg-@statusAgendamentoClass">
+                                                    @agendamento.Status.ToString()
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Histórico de Agendamentos -->
+            @if (Model.HistoricoAgendamentos.Any())
+            {
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header">
+                        <h5 class="mb-0">
+                            <i class="fas fa-history me-2"></i>
+                            Histórico de Agendamentos
+                        </h5>
+                    </div>
+                    <div class="card-body p-0">
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Data</th>
+                                        <th>Destino</th>
+                                        <th>Veículo</th>
+                                        <th>Status</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    @foreach (var agendamento in Model.HistoricoAgendamentos.Take(5))
+                                    {
+                                        <tr>
+                                            <td>@agendamento.DataPartida.ToString("dd/MM/yyyy")</td>
+                                            <td>@agendamento.Destino</td>
+                                            <td>
+                                                @if (agendamento.VeiculoAlocado != null)
+                                                {
+                                                    <span>@agendamento.VeiculoAlocado.Modelo</span>
+                                                }
+                                                else
+                                                {
+                                                    <span class="text-muted">-</span>
+                                                }
+                                            </td>
+                                            <td>
+                                                @{
+                                                    var statusHistoricoClass = agendamento.Status switch
+                                                    {
+                                                        Sisloc.Models.Enums.StatusAgendamento.Aprovado => "success",
+                                                        Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "danger",
+                                                        Sisloc.Models.Enums.StatusAgendamento.Concluido => "secondary",
+                                                        _ => "warning"
+                                                    };
+                                                }
+                                                <span class="badge bg-@statusHistoricoClass">
+                                                    @agendamento.Status.ToString()
+                                                </span>
+                                            </td>
+                                        </tr>
+                                    }
+                                </tbody>
+                            </table>
+                        </div>
+                        @if (Model.HistoricoAgendamentos.Count > 5)
+                        {
+                            <div class="card-footer text-center">
+                                <small class="text-muted">
+                                    Mostrando os 5 mais recentes de @Model.TotalAgendamentos agendamentos
+                                </small>
+                            </div>
+                        }
+                    </div>
+                </div>
+            }
+
+        </div>
+
+        <!-- Coluna Lateral - Informações e Ações -->
+        <div class="col-lg-4">
+
+            <!-- Status e Disponibilidade -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-info-circle me-2"></i>
+                        Status e Disponibilidade
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <strong>Status Atual:</strong><br>
+                        <span class="badge bg-@statusClass fs-6">@Model.Motorista.Status.ToString()</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Documentação:</strong><br>
+                        <span class="badge bg-@Model.ClasseStatusDocumentacao fs-6">@Model.StatusDocumentacao</span>
+                    </div>
+
+                    <div class="mb-3">
+                        <strong>Próxima Disponibilidade:</strong><br>
+                        <span class="text-muted">@Model.ProximaDisponibilidade</span>
+                    </div>
+
+                    @if (Model.UltimaUtilizacao.HasValue)
+                    {
+                        <div class="mb-3">
+                            <strong>Última Utilização:</strong><br>
+                            <span class="text-muted">@Model.GetTextoUltimaUtilizacao()</span>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Estatísticas -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-chart-bar me-2"></i>
+                        Estatísticas
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row text-center">
+                        <div class="col-6 mb-3">
+                            <div class="h4 mb-0 text-primary">@Model.TotalAgendamentos</div>
+                            <small class="text-muted">Total</small>
+                        </div>
+                        <div class="col-6 mb-3">
+                            <div class="h4 mb-0 text-success">@Model.AgendamentosEsteAno</div>
+                            <small class="text-muted">Este Ano</small>
+                        </div>
+                        <div class="col-12">
+                            <div class="h4 mb-0 text-info">@Model.AgendamentosEsteMes</div>
+                            <small class="text-muted">Este Mês</small>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Categorias Compatíveis -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-car me-2"></i>
+                        Veículos Compatíveis
+                    </h6>
+                </div>
+                <div class="card-body">
+                    @foreach (CategoriaVeiculo categoria in Enum.GetValues<CategoriaVeiculo>())
+                    {
+                        @if (Model.PodeConduzirCategoria(categoria))
+                        {
+                            <span class="badge bg-success me-1 mb-1">@categoria.ToString()</span>
+                        }
+                        else
+                        {
+                            <span class="badge bg-light text-muted me-1 mb-1">@categoria.ToString()</span>
+                        }
+                    }
+                </div>
+            </div>
+
+            <!-- Ações -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-cogs me-2"></i>
+                        Ações
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="d-grid gap-2">
+                        @if (Model.PodeSerEditado)
+                        {
+                            <a asp-action="Edit" asp-route-id="@Model.Motorista.Id" class="btn btn-warning">
+                                <i class="fas fa-edit me-2"></i>Editar Motorista
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-warning disabled" title="Motorista possui agendamentos ativos">
+                                <i class="fas fa-edit me-2"></i>Editar (Bloqueado)
+                            </button>
+                        }
+
+                        @if (Model.PodeSerRemovido)
+                        {
+                            <a asp-action="Delete" asp-route-id="@Model.Motorista.Id" class="btn btn-outline-danger">
+                                <i class="fas fa-trash me-2"></i>Remover Motorista
+                            </a>
+                        }
+                        else
+                        {
+                            <button class="btn btn-outline-danger disabled" title="Motorista possui agendamentos ativos">
+                                <i class="fas fa-trash me-2"></i>Remover (Bloqueado)
+                            </button>
+                        }
+
+                        <a asp-action="Index" class="btn btn-outline-secondary">
+                            <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                        </a>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações do Sistema -->
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h6 class="mb-0">
+                        <i class="fas fa-database me-2"></i>
+                        Informações do Sistema
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <small class="text-muted">
+                        <strong>ID:</strong> @Model.Motorista.Id<br>
+                        <strong>CNH:</strong> @Model.Motorista.NumeroCnh<br>
+                        <strong>Categoria:</strong> @Model.Motorista.CategoriaCnh
+                    </small>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Tooltips
+            $('[title]').tooltip();
+
+            // Confirmar ações
+            $('a[href*="/Delete"]').on('click', function(e) {
+                if (!confirm('Tem certeza que deseja remover este motorista?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

@@ -414,13 +414,20 @@ namespace Sisloc.Services
             if (!ValidarCategoriaCnh(motorista.CategoriaCnh))
                 throw new ArgumentException("Categoria de CNH inválida.");
 
-            // Validar vencimento CNH
-            if (motorista.VencimentoCnh <= DateTime.Now.AddDays(-1))
-                throw new ArgumentException("CNH não pode estar vencida.");
+            // ✅ CORREÇÃO: Validar vencimento CNH (não pode estar vencida há mais de 1 ano)
+            if (motorista.VencimentoCnh.Date < DateTime.Now.Date.AddYears(-1))
+                throw new ArgumentException("CNH não pode estar vencida há mais de 1 ano.");
 
-            // Validar data do exame toxicológico
-            if (motorista.DataExameToxicologico > DateTime.Now)
-                throw new ArgumentException("Data do exame toxicológico não pode ser futura.");
+            // ✅ CORREÇÃO: Validar data do exame toxicológico
+            var hoje = DateTime.Now.Date;
+
+            // Data do exame não pode ser futura
+            if (motorista.DataExameToxicologico.Date > hoje)
+                throw new ArgumentException("A data do exame toxicológico não pode ser futura.");
+
+            // Data do exame não pode ser muito antiga (máximo 5 anos)
+            if (motorista.DataExameToxicologico.Date < hoje.AddYears(-5))
+                throw new ArgumentException("A data do exame toxicológico não pode ser anterior a 5 anos.");
 
             // Validar telefone
             if (!ValidarFormatoTelefone(motorista.Telefone))
