@@ -1,0 +1,324 @@
+﻿@model Sisloc.ViewModels.MotoristaCreateViewModel
+
+@{
+    ViewData["Title"] = "Novo Motorista";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-user-plus me-2"></i>
+                    Cadastrar Novo Motorista
+                </h2>
+                <p class="text-muted">Preencha os dados abaixo para cadastrar um novo motorista</p>
+            </div>
+
+            <!-- Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="motoristaForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Dados Pessoais -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    Dados Pessoais
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Nome e Telefone -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label asp-for="NomeCompleto" class="form-label required"></label>
+                                <input asp-for="NomeCompleto" class="form-control" placeholder="Nome completo do motorista">
+                                <span asp-validation-for="NomeCompleto" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Telefone" class="form-label required"></label>
+                                <input asp-for="Telefone" class="form-control" placeholder="(11) 99999-9999">
+                                <span asp-validation-for="Telefone" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dados da CNH -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-id-card me-2 text-primary"></i>
+                                    Dados da CNH
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- CNH e Categoria -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="NumeroCnh" class="form-label required"></label>
+                                <input asp-for="NumeroCnh" class="form-control" placeholder="12345678901" maxlength="11" style="font-family: monospace;">
+                                <span asp-validation-for="NumeroCnh" class="text-danger"></span>
+                                <div class="form-text">Apenas números (11 dígitos)</div>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CategoriaCnh" class="form-label required"></label>
+                                <select asp-for="CategoriaCnh" class="form-select" asp-items="ViewBag.CategoriasCnh">
+                                    <option value="">Selecione a categoria</option>
+                                </select>
+                                <span asp-validation-for="CategoriaCnh" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Vencimento CNH -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="VencimentoCnh" class="form-label required"></label>
+                                <input asp-for="VencimentoCnh" class="form-control" type="date">
+                                <span asp-validation-for="VencimentoCnh" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Exame Toxicológico -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-flask me-2 text-primary"></i>
+                                    Exame Toxicológico
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Data Exame -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DataExameToxicologico" class="form-label required"></label>
+                                <input asp-for="DataExameToxicologico" class="form-control" type="date">
+                                <span asp-validation-for="DataExameToxicologico" class="text-danger"></span>
+                                <div class="form-text">Válido por 2 anos</div>
+                            </div>
+                        </div>
+
+                        <!-- Alerta de Vencimento (Dinâmico) -->
+                        <div class="row mb-3" id="alertaVencimento" style="display: none;">
+                            <div class="col-12">
+                                <div class="alert alert-warning" id="alertaTexto">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <span id="mensagemAlerta"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status e Observações -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-cog me-2 text-primary"></i>
+                                    Configurações
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-select" asp-items="ViewBag.StatusList">
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label asp-for="Observacoes" class="form-label"></label>
+                                <textarea asp-for="Observacoes" class="form-control" rows="3"
+                                          placeholder="Observações adicionais sobre o motorista (opcional)"></textarea>
+                                <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Informações sobre categorias CNH -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Informações sobre as categorias CNH:</h6>
+                                    <div class="row small">
+                                        <div class="col-md-6">
+                                            <strong>A:</strong> Motocicletas<br>
+                                            <strong>B:</strong> Carros de passeio<br>
+                                            <strong>C:</strong> Caminhões pequenos<br>
+                                            <strong>D:</strong> Ônibus e micro-ônibus<br>
+                                            <strong>E:</strong> Caminhões grandes
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>AB:</strong> Motocicletas + Carros<br>
+                                            <strong>AC:</strong> Motocicletas + Carros + Caminhões pequenos<br>
+                                            <strong>AD:</strong> Motocicletas + Carros + Ônibus<br>
+                                            <strong>AE:</strong> Todas as categorias
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg px-4">
+                                        <i class="fas fa-save me-2"></i>Cadastrar Motorista
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">
+                                <i class="fas fa-lightbulb me-2"></i>Dicas Importantes
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>A CNH deve conter exatamente 11 dígitos</li>
+                                <li>O exame toxicológico é válido por 2 anos</li>
+                                <li>Motoristas com documentação vencida ficam com status "Irregular" automaticamente</li>
+                                <li>O sistema alertará sobre vencimentos próximos (CNH: 30 dias, Exame: 60 dias)</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Máscara para CNH
+            $('#NumeroCnh').on('input', function() {
+                let valor = $(this).val().replace(/\D/g, '');
+                $(this).val(valor);
+
+                // Verificar se CNH já existe (após 11 dígitos)
+                if (valor.length === 11) {
+                    verificarCnh(valor);
+                }
+            });
+
+            // Máscara para telefone
+            $('#Telefone').on('input', function() {
+                let valor = $(this).val().replace(/\D/g, '');
+
+                if (valor.length <= 10) {
+                    valor = valor.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                } else {
+                    valor = valor.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                }
+
+                $(this).val(valor);
+            });
+
+            // Atualizar alertas de vencimento em tempo real
+            function atualizarAlertasVencimento() {
+                const vencimentoCnh = new Date($('#VencimentoCnh').val());
+                const dataExame = new Date($('#DataExameToxicologico').val());
+                const hoje = new Date();
+
+                const cnhVenceEm = Math.ceil((vencimentoCnh - hoje) / (1000 * 60 * 60 * 24));
+                const exameToxVenceEm = Math.ceil((dataExame.setFullYear(dataExame.getFullYear() + 2) - hoje) / (1000 * 60 * 60 * 24));
+
+                let alertas = [];
+                let classe = 'alert-success';
+
+                if (cnhVenceEm < 0) {
+                    alertas.push('CNH vencida!');
+                    classe = 'alert-danger';
+                } else if (cnhVenceEm <= 30) {
+                    alertas.push(`CNH vence em ${cnhVenceEm} dias`);
+                    classe = 'alert-warning';
+                }
+
+                if (exameToxVenceEm < 0) {
+                    alertas.push('Exame toxicológico vencido!');
+                    classe = 'alert-danger';
+                } else if (exameToxVenceEm <= 60) {
+                    alertas.push(`Exame toxicológico vence em ${exameToxVenceEm} dias`);
+                    if (classe !== 'alert-danger') classe = 'alert-warning';
+                }
+
+                const alertaDiv = $('#alertaVencimento');
+                const alertaTextoDiv = $('#alertaTexto');
+                const mensagemSpan = $('#mensagemAlerta');
+
+                if (alertas.length > 0) {
+                    alertaTextoDiv.removeClass('alert-success alert-warning alert-danger').addClass(classe);
+                    mensagemSpan.text(alertas.join(' | '));
+                    alertaDiv.show();
+                } else {
+                    alertaDiv.hide();
+                }
+            }
+
+            $('#VencimentoCnh, #DataExameToxicologico').on('change', atualizarAlertasVencimento);
+
+            // Validação em tempo real da CNH
+            function verificarCnh(numeroCnh) {
+                $.post('@Url.Action("VerificarCnh")', { numeroCnh: numeroCnh }, function(data) {
+                    const cnhInput = $('#NumeroCnh');
+                    if (data.existe) {
+                        cnhInput.addClass('is-invalid');
+                        cnhInput.next('.text-danger').html('Esta CNH já está cadastrada.');
+                    } else {
+                        cnhInput.removeClass('is-invalid');
+                        cnhInput.next('.text-danger').html('');
+                    }
+                });
+            }
+
+            // Confirmar antes de enviar
+            $('#motoristaForm').on('submit', function(e) {
+                const confirmacao = confirm('Confirma o cadastro deste motorista?');
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Mostrar loading
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Cadastrando...');
+                submitBtn.prop('disabled', true);
+
+                // Backup em caso de erro
+                setTimeout(() => {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+
+            // Executar validação inicial
+            atualizarAlertasVencimento();
+        });
+    </script>
+}

@@ -2,12 +2,14 @@
 
 @{
     ViewData["Title"] = $"Editar Veículo {Model.Placa}";
+    var isReadonly = Model.TemAgendamentosAtivos;
+    var isDisabled = Model.TemAgendamentosAtivos;
 }
 
 <div class="container">
     <div class="row justify-content-center">
         <div class="col-lg-8">
-            
+
             <!-- Header -->
             <div class="text-center mb-4">
                 <h2 class="fw-bold text-primary">
@@ -38,7 +40,7 @@
                         <input type="hidden" asp-for="TemAgendamentosAtivos" />
                         <input type="hidden" asp-for="QuantidadeAgendamentos" />
                         <input type="hidden" asp-for="ProximoAgendamento" />
-                        
+
                         <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
 
                         <!-- Dados Básicos -->
@@ -55,9 +57,16 @@
                         <div class="row mb-3">
                             <div class="col-md-4">
                                 <label asp-for="Placa" class="form-label required"></label>
-                                <input asp-for="Placa" class="form-control text-uppercase" 
-                                       placeholder="ABC-1234" maxlength="8" style="font-family: monospace;"
-                                       @(Model.TemAgendamentosAtivos ? "readonly" : "")>
+                                @if (isReadonly)
+                                {
+                                    <input asp-for="Placa" class="form-control text-uppercase"
+                                           placeholder="ABC-1234" maxlength="8" style="font-family: monospace;" readonly>
+                                }
+                                else
+                                {
+                                    <input asp-for="Placa" class="form-control text-uppercase"
+                                           placeholder="ABC-1234" maxlength="8" style="font-family: monospace;">
+                                }
                                 <span asp-validation-for="Placa" class="text-danger"></span>
                                 @if (Model.TemAgendamentosAtivos)
                                 {
@@ -81,14 +90,22 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <label asp-for="Categoria" class="form-label required"></label>
-                                <select asp-for="Categoria" class="form-select" asp-items="ViewBag.Categorias"
-                                        @(Model.TemAgendamentosAtivos ? "disabled" : "")>
-                                    <option value="">Selecione a categoria</option>
-                                </select>
+                                @if (isDisabled)
+                                {
+                                    <select asp-for="Categoria" class="form-select" asp-items="ViewBag.Categorias" disabled>
+                                        <option value="">Selecione a categoria</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Categoria" />
+                                }
+                                else
+                                {
+                                    <select asp-for="Categoria" class="form-select" asp-items="ViewBag.Categorias">
+                                        <option value="">Selecione a categoria</option>
+                                    </select>
+                                }
                                 <span asp-validation-for="Categoria" class="text-danger"></span>
                                 @if (Model.TemAgendamentosAtivos)
                                 {
-                                    <input type="hidden" asp-for="Categoria" />
                                     <div class="form-text text-warning">
                                         <i class="fas fa-lock me-1"></i>Categoria não pode ser alterada com agendamentos ativos
                                     </div>
@@ -96,9 +113,16 @@
                             </div>
                             <div class="col-md-6">
                                 <label asp-for="CapacidadePassageiros" class="form-label required"></label>
-                                <input asp-for="CapacidadePassageiros" class="form-control" type="number" 
-                                       min="1" max="50" placeholder="Incluindo motorista"
-                                       @(Model.TemAgendamentosAtivos ? "readonly" : "")>
+                                @if (isReadonly)
+                                {
+                                    <input asp-for="CapacidadePassageiros" class="form-control" type="number"
+                                           min="1" max="50" placeholder="Incluindo motorista" readonly>
+                                }
+                                else
+                                {
+                                    <input asp-for="CapacidadePassageiros" class="form-control" type="number"
+                                           min="1" max="50" placeholder="Incluindo motorista">
+                                }
                                 <span asp-validation-for="CapacidadePassageiros" class="text-danger"></span>
                                 @if (Model.TemAgendamentosAtivos)
                                 {
@@ -127,7 +151,7 @@
                         <div class="row mb-4">
                             <div class="col-12">
                                 <label asp-for="Observacoes" class="form-label"></label>
-                                <textarea asp-for="Observacoes" class="form-control" rows="3" 
+                                <textarea asp-for="Observacoes" class="form-control" rows="3"
                                           placeholder="Observações adicionais sobre o veículo (opcional)"></textarea>
                                 <span asp-validation-for="Observacoes" class="text-danger"></span>
                             </div>
@@ -196,30 +220,35 @@
 </div>
 
 @section Scripts {
-    @{await Html.RenderPartialAsync("_ValidationScriptsPartial");}
-    
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
     <script>
         $(document).ready(function() {
+            var temAgendamentosAtivos = @Html.Raw(Model.TemAgendamentosAtivos.ToString().ToLower());
+            var veiculoId = @Model.Id;
+
             // Máscara para placa (se editável)
             if (!$('#Placa').prop('readonly')) {
                 $('#Placa').on('input', function() {
                     let valor = $(this).val().toUpperCase().replace(/[^A-Z0-9]/g, '');
                     $(this).val(valor);
-                    
+
                     // Verificar se placa já existe
                     if (valor.length >= 6) {
-                        verificarPlaca(valor, @Model.Id);
+                        verificarPlaca(valor, veiculoId);
                     }
                 });
             }
-            
+
             // Ajustar capacidade baseado na categoria (se editável)
             if (!$('#Categoria').prop('disabled')) {
                 $('#Categoria').on('change', function() {
                     if (!$('#CapacidadePassageiros').prop('readonly')) {
                         const categoria = $(this).val();
                         const capacidadeInput = $('#CapacidadePassageiros');
-                        
+
                         switch(categoria) {
                             case '1': // Hatch
                             case '2': // Sedan
@@ -236,7 +265,7 @@
                     }
                 });
             }
-            
+
             // Validação em tempo real da placa
             function verificarPlaca(placa, id) {
                 $.post('@Url.Action("VerificarPlaca")', { placa: placa, id: id }, function(data) {
@@ -250,7 +279,7 @@
                     }
                 });
             }
-            
+
             // Confirmar antes de enviar
             $('#veiculoEditForm').on('submit', function(e) {
                 const confirmacao = confirm('Confirma as alterações neste veículo?');
@@ -258,8 +287,19 @@
                     e.preventDefault();
                     return false;
                 }
-                
+
                 // Mostrar loading
                 const submitBtn = $(this).find('button[type="submit"]');
                 const originalText = submitBtn.html();
-                submitBtn.html('<i class="fas fa-spinner fa-spin me-2
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Salvando...');
+                submitBtn.prop('disabled', true);
+
+                // Backup em caso de erro
+                setTimeout(() => {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+        });
+    </script>
+}

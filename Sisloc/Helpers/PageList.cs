@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
-using Sisloc.Models;
 
 namespace Sisloc.Helpers
 {
@@ -12,11 +11,6 @@ namespace Sisloc.Helpers
     /// </summary>
     public class PageList<T> : List<T>
     {
-        private List<Veiculo> veiculos;
-        private int v1;
-        private int v2;
-        private int v3;
-
         /// <summary>
         /// Número da página atual (base 1).
         /// </summary>
@@ -28,6 +22,11 @@ namespace Sisloc.Helpers
         public int TotalPages { get; private set; }
 
         /// <summary>
+        /// Total de itens na fonte de dados.
+        /// </summary>
+        public int TotalCount { get; private set; }
+
+        /// <summary>
         /// Indica se existe página anterior.
         /// </summary>
         public bool HasPreviousPage => PageIndex > 1;
@@ -37,20 +36,20 @@ namespace Sisloc.Helpers
         /// </summary>
         public bool HasNextPage => PageIndex < TotalPages;
 
-        private PageList(List<T> items, int count, int pageIndex, int pageSize)
+        /// <summary>
+        /// Construtor para criar uma instância de PageList.
+        /// </summary>
+        /// <param name="items">Lista de itens da página atual.</param>
+        /// <param name="count">Total de itens na fonte de dados.</param>
+        /// <param name="pageIndex">Número da página atual.</param>
+        /// <param name="pageSize">Tamanho da página.</param>
+        public PageList(List<T> items, int count, int pageIndex, int pageSize)
         {
             PageIndex = pageIndex;
-            TotalPages = (int)Math.Ceiling(count / (double)pageSize);
+            TotalCount = count;
+            TotalPages = count > 0 ? (int)Math.Ceiling(count / (double)pageSize) : 1;
 
             this.AddRange(items);
-        }
-
-        public PageList(List<Veiculo> veiculos, int v1, int v2, int v3)
-        {
-            this.veiculos = veiculos;
-            this.v1 = v1;
-            this.v2 = v2;
-            this.v3 = v3;
         }
 
         /// <summary>
@@ -62,6 +61,10 @@ namespace Sisloc.Helpers
         /// <returns>PageList contendo apenas os itens da página solicitada.</returns>
         public static async Task<PageList<T>> CreateAsync(IQueryable<T> source, int pageIndex, int pageSize)
         {
+            // Validações
+            if (pageIndex < 1) pageIndex = 1;
+            if (pageSize < 1) pageSize = 10;
+
             // Conta total de registros
             var count = await source.CountAsync();
 
@@ -72,6 +75,17 @@ namespace Sisloc.Helpers
                 .ToListAsync();
 
             return new PageList<T>(items, count, pageIndex, pageSize);
+        }
+
+        /// <summary>
+        /// Cria um PageList vazio para situações de erro ou consultas sem resultados.
+        /// </summary>
+        /// <param name="pageIndex">Número da página.</param>
+        /// <param name="pageSize">Tamanho da página.</param>
+        /// <returns>PageList vazio.</returns>
+        public static PageList<T> CreateEmpty(int pageIndex = 1, int pageSize = 10)
+        {
+            return new PageList<T>(new List<T>(), 0, pageIndex, pageSize);
         }
     }
 }

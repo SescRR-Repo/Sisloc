@@ -48,6 +48,7 @@ builder.Services.AddMemoryCache();
 
 // Configuração de serviços customizados
 builder.Services.AddScoped<IVeiculoService, VeiculoService>();
+builder.Services.AddScoped<IMotoristaService, MotoristaService>();
 // builder.Services.AddScoped<IAgendamentoService, AgendamentoService>();
 // builder.Services.AddScoped<IMotoristaService, MotoristaService>();
 
@@ -88,6 +89,11 @@ app.MapControllerRoute(
     name: "veiculos",
     pattern: "veiculos/{action=Index}/{id?}",
     defaults: new { controller = "Veiculos" });
+
+app.MapControllerRoute(
+    name: "motoristas",
+    pattern: "motoristas/{action=Index}/{id?}",
+    defaults: new { controller = "Motoristas" });
 
 app.MapControllerRoute(
     name: "consulta",

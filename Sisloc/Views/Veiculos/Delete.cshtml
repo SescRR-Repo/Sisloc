@@ -1,0 +1,233 @@
+﻿@model Sisloc.Models.Veiculo
+
+@{
+    ViewData["Title"] = $"Remover Veículo {Model.Placa}";
+
+    string GetStatusClass(Sisloc.Models.Enums.StatusVeiculo status)
+    {
+        return status switch
+        {
+            Sisloc.Models.Enums.StatusVeiculo.Disponivel => "success",
+            Sisloc.Models.Enums.StatusVeiculo.Reservado => "warning",
+            Sisloc.Models.Enums.StatusVeiculo.EmUso => "primary",
+            Sisloc.Models.Enums.StatusVeiculo.Manutencao => "danger",
+            _ => "secondary"
+        };
+    }
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-danger">
+                    <i class="fas fa-trash me-2"></i>
+                    Remover Veículo
+                </h2>
+                <p class="text-muted">Confirme a remoção do veículo <strong>@Model.Placa</strong></p>
+            </div>
+
+            <!-- Verificação de Permissão -->
+            @if (!(bool)ViewBag.PodeSerRemovido)
+            {
+                <div class="alert alert-danger">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Não é possível remover este veículo!</h6>
+                    <p class="mb-0">@ViewBag.MotivoNaoRemocao</p>
+                </div>
+            }
+
+            <!-- Informações do Veículo -->
+            <div class="card shadow-sm border-danger">
+                <div class="card-header bg-danger text-white">
+                    <h5 class="mb-0">
+                        <i class="fas fa-car me-2"></i>
+                        Informações do Veículo
+                    </h5>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-id-card me-2 text-primary"></i>Placa:</strong><br>
+                            <span class="ms-3 protocol-display">@Model.Placa</span>
+                        </div>
+                        <div class="col-md-6">
+                            <strong><i class="fas fa-car me-2 text-primary"></i>Modelo:</strong><br>
+                            <span class="ms-3">@Model.Modelo</span>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <strong><i class="fas fa-tags me-2 text-info"></i>Categoria:</strong><br>
+                            <span class="ms-3 badge bg-primary">@Model.Categoria.ToString()</span>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <strong><i class="fas fa-users me-2 text-info"></i>Capacidade:</strong><br>
+                            <span class="ms-3 fw-bold">@Model.CapacidadePassageiros passageiros</span>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <strong><i class="fas fa-circle me-2 text-@GetStatusClass(Model.Status)"></i>Status:</strong><br>
+                            <span class="ms-3 badge bg-@GetStatusClass(Model.Status)">@Model.Status.ToString()</span>
+                        </div>
+                        <div class="col-md-6 mt-3">
+                            <strong><i class="fas fa-database me-2 text-secondary"></i>ID:</strong><br>
+                            <span class="ms-3">#@Model.Id</span>
+                        </div>
+                        @if (!string.IsNullOrEmpty(Model.Observacoes))
+                        {
+                            <div class="col-12 mt-3">
+                                <strong><i class="fas fa-comment me-2 text-secondary"></i>Observações:</strong><br>
+                                <div class="ms-3 border-start border-3 border-light ps-3">
+                                    @Model.Observacoes
+                                </div>
+                            </div>
+                        }
+                    </div>
+                </div>
+            </div>
+
+            <!-- Informações sobre Remoção -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">
+                                <i class="fas fa-info-circle me-2"></i>
+                                Informações Importantes sobre a Remoção
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li><strong>Remoção Segura:</strong> O veículo será marcado como "Manutenção" ao invés de ser deletado</li>
+                                <li><strong>Histórico Preservado:</strong> Todos os agendamentos anteriores serão mantidos</li>
+                                <li><strong>Reversibilidade:</strong> A remoção pode ser revertida alterando o status</li>
+                                <li><strong>Restrições:</strong> Veículos com agendamentos ativos não podem ser removidos</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- Agendamentos Relacionados -->
+            @if (Model.Agendamentos != null && Model.Agendamentos.Any())
+            {
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-info">
+                            <div class="card-header bg-info text-white">
+                                <h6 class="mb-0">
+                                    <i class="fas fa-calendar me-2"></i>
+                                    Agendamentos Relacionados (@Model.Agendamentos.Count)
+                                </h6>
+                            </div>
+                            <div class="card-body">
+                                <div class="table-responsive">
+                                    <table class="table table-sm mb-0">
+                                        <thead>
+                                            <tr>
+                                                <th>Protocolo</th>
+                                                <th>Solicitante</th>
+                                                <th>Data</th>
+                                                <th>Status</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            @foreach (var agendamento in Model.Agendamentos.OrderByDescending(a => a.DataCriacao).Take(5))
+                                            {
+                                                <tr>
+                                                    <td>
+                                                        <span class="protocol-display small">@agendamento.Protocolo</span>
+                                                    </td>
+                                                    <td>@agendamento.NomeSolicitante</td>
+                                                    <td>
+                                                        <small>@agendamento.DataPartida.ToString("dd/MM/yyyy")</small>
+                                                    </td>
+                                                    <td>
+                                                        @{
+                                                            var statusClass = agendamento.Status switch
+                                                            {
+                                                                Sisloc.Models.Enums.StatusAgendamento.Pendente => "warning",
+                                                                Sisloc.Models.Enums.StatusAgendamento.Aprovado => "success",
+                                                                Sisloc.Models.Enums.StatusAgendamento.Rejeitado => "danger",
+                                                                Sisloc.Models.Enums.StatusAgendamento.EmAndamento => "primary",
+                                                                Sisloc.Models.Enums.StatusAgendamento.Concluido => "secondary",
+                                                                Sisloc.Models.Enums.StatusAgendamento.Cancelado => "dark",
+                                                                _ => "secondary"
+                                                            };
+                                                        }
+                                                        <span class="badge bg-@statusClass badge-sm">
+                                                            @agendamento.Status.ToString()
+                                                        </span>
+                                                    </td>
+                                                </tr>
+                                            }
+                                        </tbody>
+                                    </table>
+                                </div>
+                                @if (Model.Agendamentos.Count > 5)
+                                {
+                                    <div class="text-center mt-2">
+                                        <small class="text-muted">
+                                            ... e mais @(Model.Agendamentos.Count - 5) agendamento(s)
+                                        </small>
+                                    </div>
+                                }
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Botões de Ação -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    @if ((bool)ViewBag.PodeSerRemovido)
+                    {
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Voltar
+                            </a>
+                            <a asp-action="Index" class="btn btn-outline-primary">
+                                <i class="fas fa-list me-2"></i>Lista de Veículos
+                            </a>
+                            <form asp-action="Delete" method="post" class="d-inline">
+                                <input type="hidden" name="id" value="@Model.Id" />
+                                <button type="submit" class="btn btn-danger btn-lg px-4"
+                                        onclick="return confirmarRemocao()">
+                                    <i class="fas fa-trash me-2"></i>Confirmar Remoção
+                                </button>
+                            </form>
+                        </div>
+                    }
+                    else
+                    {
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                <i class="fas fa-arrow-left me-2"></i>Voltar aos Detalhes
+                            </a>
+                            <a asp-action="Index" class="btn btn-primary">
+                                <i class="fas fa-list me-2"></i>Lista de Veículos
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        function confirmarRemocao() {
+            return confirm('ATENÇÃO: Tem certeza que deseja remover este veículo?\n\n' +
+                         'O veículo será marcado como "Manutenção" e não aparecerá mais nas listagens.\n' +
+                         'Esta ação pode ser revertida posteriormente.\n\n' +
+                         'Deseja continuar?');
+        }
+
+        $(document).ready(function() {
+            // Foco no botão de confirmação se disponível
+            if ($('button[type="submit"]').length) {
+                $('button[type="submit"]').focus();
+            }
+        });
+    </script>
+}
