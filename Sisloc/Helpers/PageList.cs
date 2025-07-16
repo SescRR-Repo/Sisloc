@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.EntityFrameworkCore;
+using Sisloc.Models;
 
 namespace Sisloc.Helpers
 {
@@ -11,6 +12,11 @@ namespace Sisloc.Helpers
     /// </summary>
     public class PageList<T> : List<T>
     {
+        private List<Veiculo> veiculos;
+        private int v1;
+        private int v2;
+        private int v3;
+
         /// <summary>
         /// Número da página atual (base 1).
         /// </summary>
@@ -37,6 +43,14 @@ namespace Sisloc.Helpers
             TotalPages = (int)Math.Ceiling(count / (double)pageSize);
 
             this.AddRange(items);
+        }
+
+        public PageList(List<Veiculo> veiculos, int v1, int v2, int v3)
+        {
+            this.veiculos = veiculos;
+            this.v1 = v1;
+            this.v2 = v2;
+            this.v3 = v3;
         }
 
         /// <summary>

@@ -1,5 +1,6 @@
 using Microsoft.EntityFrameworkCore;
 using Sisloc.Data;
+using Sisloc.Services;
 using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -45,8 +46,10 @@ builder.Services.AddSession(options =>
 // Configuração de memória cache
 builder.Services.AddMemoryCache();
 
-// Configuração de serviços customizados (vamos criar depois)
+// Configuração de serviços customizados
+builder.Services.AddScoped<IVeiculoService, VeiculoService>();
 // builder.Services.AddScoped<IAgendamentoService, AgendamentoService>();
+// builder.Services.AddScoped<IMotoristaService, MotoristaService>();
 
 var app = builder.Build();
 
@@ -80,6 +83,11 @@ app.MapControllerRoute(
     name: "admin",
     pattern: "admin/{action=Index}/{id?}",
     defaults: new { controller = "Admin" });
+
+app.MapControllerRoute(
+    name: "veiculos",
+    pattern: "veiculos/{action=Index}/{id?}",
+    defaults: new { controller = "Veiculos" });
 
 app.MapControllerRoute(
     name: "consulta",

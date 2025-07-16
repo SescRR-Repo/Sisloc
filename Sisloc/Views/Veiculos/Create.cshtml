@@ -1,0 +1,224 @@
+﻿@model Sisloc.ViewModels.VeiculoCreateViewModel
+
+@{
+    ViewData["Title"] = "Novo Veículo";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-car-side me-2"></i>
+                    Cadastrar Novo Veículo
+                </h2>
+                <p class="text-muted">Preencha os dados abaixo para cadastrar um novo veículo na frota</p>
+            </div>
+
+            <!-- Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Create" method="post" id="veiculoForm">
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Dados Básicos -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                                    Dados Básicos
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Placa e Modelo -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Placa" class="form-label required"></label>
+                                <input asp-for="Placa" class="form-control text-uppercase"
+                                       placeholder="ABC-1234" maxlength="8" style="font-family: monospace;">
+                                <span asp-validation-for="Placa" class="text-danger"></span>
+                                <div class="form-text">Formato: ABC-1234 ou ABC-1D23</div>
+                            </div>
+                            <div class="col-md-8">
+                                <label asp-for="Modelo" class="form-label required"></label>
+                                <input asp-for="Modelo" class="form-control" placeholder="Ex: Gol 1.0, Corolla XEI">
+                                <span asp-validation-for="Modelo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Categoria e Capacidade -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Categoria" class="form-label required"></label>
+                                <select asp-for="Categoria" class="form-select" asp-items="ViewBag.Categorias">
+                                    <option value="">Selecione a categoria</option>
+                                </select>
+                                <span asp-validation-for="Categoria" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CapacidadePassageiros" class="form-label required"></label>
+                                <input asp-for="CapacidadePassageiros" class="form-control" type="number"
+                                       min="1" max="50" placeholder="Incluindo motorista">
+                                <span asp-validation-for="CapacidadePassageiros" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-select" asp-items="ViewBag.StatusList">
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label asp-for="Observacoes" class="form-label"></label>
+                                <textarea asp-for="Observacoes" class="form-control" rows="3"
+                                          placeholder="Observações adicionais sobre o veículo (opcional)"></textarea>
+                                <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Informações sobre categorias -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <div class="alert alert-info">
+                                    <h6><i class="fas fa-info-circle me-2"></i>Informações sobre as categorias:</h6>
+                                    <div class="row small">
+                                        <div class="col-md-6">
+                                            <strong>Hatch:</strong> Carros compactos para cidade<br>
+                                            <strong>Sedan:</strong> Carros de médio porte<br>
+                                            <strong>Caminhonete:</strong> Veículos para carga média
+                                        </div>
+                                        <div class="col-md-6">
+                                            <strong>Pickup:</strong> Veículos robustos para carga<br>
+                                            <strong>Caminhão:</strong> Transporte de cargas pesadas
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                                    </a>
+                                    <button type="submit" class="btn btn-success btn-lg px-4">
+                                        <i class="fas fa-save me-2"></i>Cadastrar Veículo
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-warning">
+                        <div class="card-body">
+                            <h6 class="card-title text-warning">
+                                <i class="fas fa-lightbulb me-2"></i>Dicas Importantes
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>A placa deve seguir o formato brasileiro (ABC-1234 ou ABC-1D23)</li>
+                                <li>A capacidade inclui o motorista quando necessário</li>
+                                <li>Veículos novos são criados com status "Disponível" por padrão</li>
+                                <li>As informações podem ser editadas posteriormente</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Máscara para placa
+            $('#Placa').on('input', function() {
+                let valor = $(this).val().toUpperCase().replace(/[^A-Z0-9]/g, '');
+                $(this).val(valor);
+
+                // Verificar se placa já existe (após 3 caracteres)
+                if (valor.length >= 6) {
+                    verificarPlaca(valor);
+                }
+            });
+
+            // Ajustar capacidade baseado na categoria
+            $('#Categoria').on('change', function() {
+                const categoria = $(this).val();
+                const capacidadeInput = $('#CapacidadePassageiros');
+
+                switch(categoria) {
+                    case '1': // Hatch
+                    case '2': // Sedan
+                        capacidadeInput.val(5);
+                        break;
+                    case '3': // Caminhonete
+                    case '4': // Pickup
+                        capacidadeInput.val(5);
+                        break;
+                    case '5': // Caminhão
+                        capacidadeInput.val(3);
+                        break;
+                }
+            });
+
+            // Validação em tempo real da placa
+            function verificarPlaca(placa) {
+                $.post('@Url.Action("VerificarPlaca")', { placa: placa }, function(data) {
+                    const placaInput = $('#Placa');
+                    if (data.existe) {
+                        placaInput.addClass('is-invalid');
+                        placaInput.next('.text-danger').html('Esta placa já está cadastrada.');
+                    } else {
+                        placaInput.removeClass('is-invalid');
+                        placaInput.next('.text-danger').html('');
+                    }
+                });
+            }
+
+            // Confirmar antes de enviar
+            $('#veiculoForm').on('submit', function(e) {
+                const confirmacao = confirm('Confirma o cadastro deste veículo?');
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Mostrar loading
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Cadastrando...');
+                submitBtn.prop('disabled', true);
+
+                // Backup em caso de erro
+                setTimeout(() => {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+        });
+    </script>
+}
