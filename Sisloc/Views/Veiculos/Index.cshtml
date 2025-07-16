@@ -1,0 +1,296 @@
+﻿@model Sisloc.ViewModels.VeiculoIndexViewModel
+
+@{
+    ViewData["Title"] = "Gestão de Veículos";
+}
+
+<div class="container-fluid">
+
+    <!-- Header -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="d-flex justify-content-between align-items-center">
+                <h2 class="fw-bold text-primary mb-0">
+                    <i class="fas fa-car me-2"></i>
+                    Gestão de Veículos
+                </h2>
+                <div>
+                    <a asp-action="Create" class="btn btn-success">
+                        <i class="fas fa-plus me-2"></i>Novo Veículo
+                    </a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Estatísticas -->
+    @if (Model.Estatisticas != null)
+    {
+        <div class="row g-3 mb-4">
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100 bg-primary bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-car fa-2x text-primary mb-2"></i>
+                        <h4 class="mb-1">@Model.Estatisticas.TotalVeiculos</h4>
+                        <small class="text-muted">Total</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100 bg-success bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-check-circle fa-2x text-success mb-2"></i>
+                        <h4 class="mb-1">@Model.Estatisticas.TotalDisponiveis</h4>
+                        <small class="text-muted">Disponíveis</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100 bg-warning bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-clock fa-2x text-warning mb-2"></i>
+                        <h4 class="mb-1">@Model.Estatisticas.TotalReservados</h4>
+                        <small class="text-muted">Reservados</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100 bg-info bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-play fa-2x text-info mb-2"></i>
+                        <h4 class="mb-1">@Model.Estatisticas.TotalEmUso</h4>
+                        <small class="text-muted">Em Uso</small>
+                    </div>
+                </div>
+            </div>
+
+            <div class="col-xl-2 col-md-4 col-sm-6">
+                <div class="card border-0 shadow-sm h-100 bg-danger bg-opacity-10">
+                    <div class="card-body text-center">
+                        <i class="fas fa-wrench fa-2x text-danger mb-2"></i>
+                        <h4 class="mb-1">@Model.Estatisticas.TotalManutencao</h4>
+                        <small class="text-muted">Manutenção</small>
+                    </div>
+                </div>
+            </div>
+        </div>
+    }
+
+    <!-- Filtros -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header">
+            <h5 class="mb-0">
+                <i class="fas fa-filter me-2"></i>
+                Filtros
+            </h5>
+        </div>
+        <div class="card-body">
+            <form method="get" asp-action="Index">
+                <div class="row g-3">
+                    <div class="col-md-4">
+                        <label for="filtroTexto" class="form-label">Buscar</label>
+                        <input type="text" name="filtroTexto" class="form-control"
+                               value="@Model.FiltroTexto" placeholder="Placa ou modelo...">
+                    </div>
+                    <div class="col-md-3">
+                        <label for="categoria" class="form-label">Categoria</label>
+                        <select name="categoria" class="form-select" asp-items="ViewBag.Categorias">
+                            <option value="">Todas as categorias</option>
+                        </select>
+                    </div>
+                    <div class="col-md-3">
+                        <label for="status" class="form-label">Status</label>
+                        <select name="status" class="form-select" asp-items="ViewBag.StatusList">
+                            <option value="">Todos os status</option>
+                        </select>
+                    </div>
+                    <div class="col-md-2">
+                        <label class="form-label">&nbsp;</label>
+                        <div class="d-grid">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-search me-1"></i>Filtrar
+                            </button>
+                        </div>
+                    </div>
+                </div>
+                <div class="row mt-2">
+                    <div class="col-12">
+                        <a href="@Url.Action("Index")" class="btn btn-outline-secondary btn-sm">
+                            <i class="fas fa-times me-1"></i>Limpar Filtros
+                        </a>
+                    </div>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Tabela de Veículos -->
+    <div class="card shadow-sm">
+        <div class="card-header d-flex justify-content-between align-items-center">
+            <h5 class="mb-0">
+                <i class="fas fa-list me-2"></i>
+                Veículos (@Model.Veiculos.Count() de @(Model.Veiculos.TotalPages * Model.ItensPorPagina) registros)
+            </h5>
+        </div>
+        <div class="card-body p-0">
+            @if (Model.Veiculos.Any())
+            {
+                <div class="table-responsive">
+                    <table class="table table-hover mb-0">
+                        <thead class="table-light">
+                            <tr>
+                                <th>Placa</th>
+                                <th>Modelo</th>
+                                <th>Categoria</th>
+                                <th>Capacidade</th>
+                                <th>Status</th>
+                                <th class="text-center">Ações</th>
+                            </tr>
+                        </thead>
+                        <tbody>
+                            @foreach (var veiculo in Model.Veiculos)
+                            {
+                                <tr>
+                                    <td>
+                                        <strong class="protocol-display">@veiculo.Placa</strong>
+                                    </td>
+                                    <td>@veiculo.Modelo</td>
+                                    <td>
+                                        <span class="badge bg-light text-dark">
+                                            @veiculo.Categoria.ToString()
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <i class="fas fa-users me-1"></i>
+                                        @veiculo.CapacidadePassageiros
+                                    </td>
+                                    <td>
+                                        @{
+                                            var statusClass = veiculo.Status switch
+                                            {
+                                                Sisloc.Models.Enums.StatusVeiculo.Disponivel => "success",
+                                                Sisloc.Models.Enums.StatusVeiculo.Reservado => "warning",
+                                                Sisloc.Models.Enums.StatusVeiculo.EmUso => "primary",
+                                                Sisloc.Models.Enums.StatusVeiculo.Manutencao => "danger",
+                                                _ => "secondary"
+                                            };
+                                        }
+                                        <span class="badge bg-@statusClass status-badge">
+                                            @veiculo.Status.ToString()
+                                        </span>
+                                    </td>
+                                    <td class="text-center">
+                                        <div class="btn-group btn-group-sm" role="group">
+                                            <a asp-action="Details" asp-route-id="@veiculo.Id"
+                                               class="btn btn-outline-primary" title="Ver detalhes">
+                                                <i class="fas fa-eye"></i>
+                                            </a>
+                                            <a asp-action="Edit" asp-route-id="@veiculo.Id"
+                                               class="btn btn-outline-warning" title="Editar">
+                                                <i class="fas fa-edit"></i>
+                                            </a>
+                                            <a asp-action="Delete" asp-route-id="@veiculo.Id"
+                                               class="btn btn-outline-danger" title="Remover">
+                                                <i class="fas fa-trash"></i>
+                                            </a>
+                                        </div>
+                                    </td>
+                                </tr>
+                            }
+                        </tbody>
+                    </table>
+                </div>
+
+                <!-- Paginação -->
+                @if (Model.Veiculos.TotalPages > 1)
+                {
+                    <div class="card-footer">
+                        <nav aria-label="Paginação de veículos">
+                            <ul class="pagination justify-content-center mb-0">
+                                <!-- Primeira página -->
+                                <li class="page-item @(!Model.Veiculos.HasPreviousPage ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index")@Model.ObterUrlComFiltros(1)">
+                                        <i class="fas fa-angle-double-left"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Página anterior -->
+                                <li class="page-item @(!Model.Veiculos.HasPreviousPage ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index")@Model.ObterUrlComFiltros(Model.Veiculos.PageIndex - 1)">
+                                        <i class="fas fa-angle-left"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Páginas -->
+                                @for (int i = Math.Max(1, Model.Veiculos.PageIndex - 2);
+                               i <= Math.Min(Model.Veiculos.TotalPages, Model.Veiculos.PageIndex + 2);
+                               i++)
+                                {
+                                    <li class="page-item @(i == Model.Veiculos.PageIndex ? "active" : "")">
+                                        <a class="page-link" href="@Url.Action("Index")@Model.ObterUrlComFiltros(i)">@i</a>
+                                    </li>
+                                }
+
+                                <!-- Próxima página -->
+                                <li class="page-item @(!Model.Veiculos.HasNextPage ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index")@Model.ObterUrlComFiltros(Model.Veiculos.PageIndex + 1)">
+                                        <i class="fas fa-angle-right"></i>
+                                    </a>
+                                </li>
+
+                                <!-- Última página -->
+                                <li class="page-item @(!Model.Veiculos.HasNextPage ? "disabled" : "")">
+                                    <a class="page-link" href="@Url.Action("Index")@Model.ObterUrlComFiltros(Model.Veiculos.TotalPages)">
+                                        <i class="fas fa-angle-double-right"></i>
+                                    </a>
+                                </li>
+                            </ul>
+                        </nav>
+
+                        <div class="text-center mt-2">
+                            <small class="text-muted">
+                                Página @Model.Veiculos.PageIndex de @Model.Veiculos.TotalPages
+                            </small>
+                        </div>
+                    </div>
+                }
+            }
+            else
+            {
+                <div class="text-center py-5">
+                    <i class="fas fa-car fa-3x text-muted mb-3"></i>
+                    <h5 class="text-muted">Nenhum veículo encontrado</h5>
+                    <p class="text-muted">Não há veículos que correspondam aos filtros aplicados.</p>
+                    <a asp-action="Create" class="btn btn-primary">
+                        <i class="fas fa-plus me-2"></i>Cadastrar Primeiro Veículo
+                    </a>
+                </div>
+            }
+        </div>
+    </div>
+
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Tooltips
+            $('[title]').tooltip();
+
+            // Auto-submit do filtro após mudança
+            $('select[name="categoria"], select[name="status"]').on('change', function() {
+                $(this).closest('form').submit();
+            });
+
+            // Confirmar remoção
+            $('a[href*="/Delete"]').on('click', function(e) {
+                if (!confirm('Tem certeza que deseja remover este veículo?')) {
+                    e.preventDefault();
+                }
+            });
+        });
+    </script>
+}

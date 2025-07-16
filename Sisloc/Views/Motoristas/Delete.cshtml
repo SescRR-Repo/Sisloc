@@ -1,0 +1,310 @@
+﻿@model Sisloc.Models.Motorista
+
+@{
+    ViewData["Title"] = "Remover Motorista";
+    var podeSerRemovido = ViewBag.PodeSerRemovido as bool? ?? false;
+    var motivoNaoRemocao = ViewBag.MotivoNaoRemocao as string ?? "";
+
+    // Calcular status da documentação
+    var cnhVenceEm = (Model.VencimentoCnh - DateTime.Now).Days;
+    var exameToxVenceEm = (Model.DataExameToxicologico.AddYears(2) - DateTime.Now).Days;
+    var statusDoc = "OK";
+    var classeDoc = "success";
+
+    if (cnhVenceEm < 0 || exameToxVenceEm < 0)
+    {
+        statusDoc = "Vencida";
+        classeDoc = "danger";
+    }
+    else if (cnhVenceEm <= 30 || exameToxVenceEm <= 60)
+    {
+        statusDoc = "Alerta";
+        classeDoc = "warning";
+    }
+
+    var statusClass = Model.Status switch
+    {
+        Sisloc.Models.Enums.StatusMotorista.Disponivel => "success",
+        Sisloc.Models.Enums.StatusMotorista.Ocupado => "primary",
+        Sisloc.Models.Enums.StatusMotorista.Folga => "secondary",
+        Sisloc.Models.Enums.StatusMotorista.Irregular => "danger",
+        _ => "secondary"
+    };
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <div class="mb-4">
+                    <i class="fas fa-exclamation-triangle text-@(podeSerRemovido ? "warning" : "danger")" style="font-size: 4rem;"></i>
+                </div>
+                <h2 class="fw-bold text-@(podeSerRemovido ? "warning" : "danger") mb-3">
+                    @(podeSerRemovido ? "Confirmar Remoção" : "Remoção Bloqueada")
+                </h2>
+                <p class="lead text-muted">
+                    @(podeSerRemovido ? "Você está prestes a remover este motorista do sistema" : "Este motorista não pode ser removido")
+                </p>
+            </div>
+
+            <!-- Alerta de Bloqueio -->
+            @if (!podeSerRemovido)
+            {
+                <div class="alert alert-danger" role="alert">
+                    <h5><i class="fas fa-ban me-2"></i>Remoção Bloqueada</h5>
+                    <p class="mb-0">@motivoNaoRemocao</p>
+                </div>
+            }
+
+            <!-- Dados do Motorista -->
+            <div class="card shadow-sm mb-4">
+                <div class="card-header d-flex justify-content-between align-items-center">
+                    <h5 class="mb-0">
+                        <i class="fas fa-user-tie me-2"></i>
+                        Dados do Motorista
+                    </h5>
+                    <span class="badge bg-@statusClass status-badge">
+                        @Model.Status.ToString()
+                    </span>
+                </div>
+                <div class="card-body">
+
+                    <!-- Informações Principais -->
+                    <div class="row mb-4">
+                        <div class="col-md-8">
+                            <h4 class="text-primary mb-2">@Model.NomeCompleto</h4>
+                            <p class="mb-1">
+                                <i class="fas fa-phone me-2 text-muted"></i>
+                                <strong>Telefone:</strong> @Model.Telefone
+                            </p>
+                        </div>
+                        <div class="col-md-4 text-md-end">
+                            <div class="mb-2">
+                                <strong>Status da Documentação:</strong><br>
+                                <span class="badge bg-@classeDoc fs-6">@statusDoc</span>
+                            </div>
+                        </div>
+                    </div>
+
+                    <!-- Dados da CNH -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-id-card me-2 text-primary"></i>
+                                Dados da CNH
+                            </h6>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Número:</strong><br>
+                            <span class="protocol-display">@Model.NumeroCnh</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Categoria:</strong><br>
+                            <span class="badge bg-primary">@Model.CategoriaCnh</span>
+                        </div>
+                        <div class="col-md-4">
+                            <strong>Vencimento:</strong><br>
+                            @Model.VencimentoCnh.ToString("dd/MM/yyyy")
+                            @if (cnhVenceEm <= 30)
+                            {
+                                <br>
+
+                                <small class="text-@(cnhVenceEm < 0 ? "danger" : "warning")">
+                                    @(cnhVenceEm < 0 ? $"Vencida há {Math.Abs(cnhVenceEm)} dias" : $"Vence em {cnhVenceEm} dias")
+                                </small>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Exame Toxicológico -->
+                    <div class="row mb-4">
+                        <div class="col-12">
+                            <h6 class="border-bottom pb-2 mb-3">
+                                <i class="fas fa-flask me-2 text-primary"></i>
+                                Exame Toxicológico
+                            </h6>
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Data do Exame:</strong><br>
+                            @Model.DataExameToxicologico.ToString("dd/MM/yyyy")
+                        </div>
+                        <div class="col-md-6">
+                            <strong>Válido até:</strong><br>
+                            @Model.DataExameToxicologico.AddYears(2).ToString("dd/MM/yyyy")
+                            @if (exameToxVenceEm <= 60)
+                            {
+                                <br>
+
+                                <small class="text-@(exameToxVenceEm < 0 ? "danger" : "warning")">
+                                    @(exameToxVenceEm < 0 ? $"Vencido há {Math.Abs(exameToxVenceEm)} dias" : $"Vence em {exameToxVenceEm} dias")
+                                </small>
+                            }
+                        </div>
+                    </div>
+
+                    <!-- Observações -->
+                    @if (!string.IsNullOrEmpty(Model.Observacoes))
+                    {
+                        <div class="row">
+                            <div class="col-12">
+                                <h6 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-comment-alt me-2 text-primary"></i>
+                                    Observações
+                                </h6>
+                                <div class="alert alert-info">
+                                    @Model.Observacoes
+                                </div>
+                            </div>
+                        </div>
+                    }
+
+                </div>
+            </div>
+
+            <!-- Aviso sobre a Remoção -->
+            @if (podeSerRemovido)
+            {
+                <div class="card shadow-sm border-warning mb-4">
+                    <div class="card-header bg-warning text-dark">
+                        <h6 class="mb-0">
+                            <i class="fas fa-exclamation-triangle me-2"></i>
+                            Importante - Sobre a Remoção
+                        </h6>
+                    </div>
+                    <div class="card-body">
+                        <div class="alert alert-warning">
+                            <h6><i class="fas fa-info-circle me-2"></i>O que acontecerá:</h6>
+                            <ul class="mb-2">
+                                <li>O motorista será marcado como <strong>"Irregular"</strong> no sistema</li>
+                                <li>Não será removido permanentemente do banco de dados</li>
+                                <li>Não poderá mais ser alocado para novos agendamentos</li>
+                                <li>Histórico de agendamentos será preservado</li>
+                            </ul>
+                        </div>
+
+                        <div class="alert alert-info mb-0">
+                            <h6><i class="fas fa-undo me-2"></i>Reversão:</h6>
+                            <p class="mb-0">
+                                Esta ação pode ser revertida editando o motorista e alterando o status para "Disponível"
+                                (se a documentação estiver válida).
+                            </p>
+                        </div>
+                    </div>
+                </div>
+            }
+
+            <!-- Ações -->
+            <div class="card shadow-sm">
+                <div class="card-body">
+                    @if (podeSerRemovido)
+                    {
+                        <!-- Formulário de Confirmação -->
+                        <form asp-action="Delete" method="post" id="deleteForm">
+                            <input type="hidden" asp-for="Id" />
+
+                            <div class="row">
+                                <div class="col-12">
+                                    <div class="alert alert-danger">
+                                        <div class="form-check">
+                                            <input class="form-check-input" type="checkbox" id="confirmRemoval" required>
+                                            <label class="form-check-label fw-bold" for="confirmRemoval">
+                                                Confirmo que desejo remover este motorista do sistema
+                                            </label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                                <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary btn-lg">
+                                    <i class="fas fa-eye me-2"></i>Ver Detalhes
+                                </a>
+                                <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                    <i class="fas fa-arrow-left me-2"></i>Cancelar
+                                </a>
+                                <button type="submit" class="btn btn-danger btn-lg px-4" id="deleteButton" disabled>
+                                    <i class="fas fa-trash me-2"></i>Confirmar Remoção
+                                </button>
+                            </div>
+                        </form>
+                    }
+                    else
+                    {
+                        <!-- Ações quando bloqueado -->
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-center">
+                            <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-primary btn-lg">
+                                <i class="fas fa-eye me-2"></i>Ver Detalhes
+                            </a>
+                            <a asp-action="Edit" asp-route-id="@Model.Id" class="btn btn-warning btn-lg">
+                                <i class="fas fa-edit me-2"></i>Editar Motorista
+                            </a>
+                            <a asp-action="Index" class="btn btn-secondary btn-lg">
+                                <i class="fas fa-arrow-left me-2"></i>Voltar à Lista
+                            </a>
+                        </div>
+                    }
+                </div>
+            </div>
+
+            <!-- Dicas -->
+            @if (podeSerRemovido)
+            {
+                <div class="row mt-4">
+                    <div class="col-12">
+                        <div class="card border-info">
+                            <div class="card-body">
+                                <h6 class="card-title text-info">
+                                    <i class="fas fa-lightbulb me-2"></i>Dicas Importantes
+                                </h6>
+                                <ul class="mb-0 small">
+                                    <li>Esta é uma operação de "soft delete" - os dados não são perdidos</li>
+                                    <li>O motorista pode ser reativado posteriormente se necessário</li>
+                                    <li>Todo o histórico de agendamentos será preservado</li>
+                                    <li>Em caso de dúvida, considere alterar apenas o status para "Folga"</li>
+                                </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            }
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    <script>
+        $(document).ready(function() {
+            // Habilitar botão apenas quando checkbox estiver marcado
+            $('#confirmRemoval').on('change', function() {
+                $('#deleteButton').prop('disabled', !this.checked);
+            });
+
+            // Confirmar antes de enviar
+            $('#deleteForm').on('submit', function(e) {
+                const confirmacao = confirm('ATENÇÃO: Você está prestes a remover este motorista.\n\nEsta ação irá alterar o status para "Irregular" e impedir novos agendamentos.\n\nDeseja continuar?');
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Mostrar loading
+                const submitBtn = $('#deleteButton');
+                const originalText = submitBtn.html();
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Removendo...');
+                submitBtn.prop('disabled', true);
+
+                // Backup em caso de erro
+                setTimeout(() => {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+
+            // Tooltips
+            $('[title]').tooltip();
+        });
+    </script>
+}

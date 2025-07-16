@@ -1,4 +1,5 @@
-﻿using Microsoft.AspNetCore.Mvc;
+﻿// Controllers/AdminController.cs
+using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using Sisloc.Data;
@@ -190,35 +191,173 @@ namespace Sisloc.Controllers
             return RedirectToAction("Index");
         }
 
-        // Métodos auxiliares
+        // POST: Cancelar agendamento
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> Cancelar(int id, string observacoesAdmin)
+        {
+            var agendamento = await _context.Agendamentos
+                .Include(a => a.VeiculoAlocado)
+                .Include(a => a.MotoristaAlocado)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (agendamento == null)
+            {
+                return NotFound();
+            }
+
+            // Só pode cancelar agendamentos aprovados, pendentes ou em andamento
+            if (agendamento.Status == StatusAgendamento.Concluido ||
+                agendamento.Status == StatusAgendamento.Rejeitado ||
+                agendamento.Status == StatusAgendamento.Cancelado)
+            {
+                TempData["ErrorMessage"] = "Não é possível cancelar este agendamento devido ao status atual.";
+                return RedirectToAction("Detalhes", new { id });
+            }
+
+            if (string.IsNullOrWhiteSpace(observacoesAdmin))
+            {
+                TempData["ErrorMessage"] = "É obrigatório informar o motivo do cancelamento.";
+                return RedirectToAction("Detalhes", new { id });
+            }
+
+            // Liberar recursos alocados
+            if (agendamento.VeiculoAlocado != null)
+            {
+                agendamento.VeiculoAlocado.Status = StatusVeiculo.Disponivel;
+            }
+
+            if (agendamento.MotoristaAlocado != null)
+            {
+                agendamento.MotoristaAlocado.Status = StatusMotorista.Disponivel;
+            }
+
+            // Atualizar o agendamento
+            agendamento.Status = StatusAgendamento.Cancelado;
+            agendamento.ObservacoesAdmin = observacoesAdmin;
+            agendamento.VeiculoAlocadoId = null;
+            agendamento.MotoristaAlocadoId = null;
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Agendamento cancelado com sucesso. Recursos liberados.";
+            return RedirectToAction("Index");
+        }
+
+        // POST: Iniciar viagem (novo status)
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> IniciarViagem(int id)
+        {
+            var agendamento = await _context.Agendamentos
+                .Include(a => a.VeiculoAlocado)
+                .Include(a => a.MotoristaAlocado)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (agendamento == null)
+            {
+                return NotFound();
+            }
+
+            if (agendamento.Status != StatusAgendamento.Aprovado)
+            {
+                TempData["ErrorMessage"] = "Só é possível iniciar viagens aprovadas.";
+                return RedirectToAction("Detalhes", new { id });
+            }
+
+            // Atualizar status
+            agendamento.Status = StatusAgendamento.EmAndamento;
+
+            if (agendamento.VeiculoAlocado != null)
+            {
+                agendamento.VeiculoAlocado.Status = StatusVeiculo.EmUso;
+            }
+
+            if (agendamento.MotoristaAlocado != null)
+            {
+                agendamento.MotoristaAlocado.Status = StatusMotorista.Ocupado;
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Viagem iniciada!";
+            return RedirectToAction("Detalhes", new { id });
+        }
+
+        // POST: Concluir viagem
+        [HttpPost]
+        [ValidateAntiForgeryToken]
+        public async Task<IActionResult> ConcluirViagem(int id, string observacoesAdmin)
+        {
+            var agendamento = await _context.Agendamentos
+                .Include(a => a.VeiculoAlocado)
+                .Include(a => a.MotoristaAlocado)
+                .FirstOrDefaultAsync(a => a.Id == id);
+
+            if (agendamento == null)
+            {
+                return NotFound();
+            }
+
+            if (agendamento.Status != StatusAgendamento.EmAndamento)
+            {
+                TempData["ErrorMessage"] = "Só é possível concluir viagens em andamento.";
+                return RedirectToAction("Detalhes", new { id });
+            }
+
+            // Liberar recursos
+            if (agendamento.VeiculoAlocado != null)
+            {
+                agendamento.VeiculoAlocado.Status = StatusVeiculo.Disponivel;
+            }
+
+            if (agendamento.MotoristaAlocado != null)
+            {
+                agendamento.MotoristaAlocado.Status = StatusMotorista.Disponivel;
+            }
+
+            // Atualizar agendamento
+            agendamento.Status = StatusAgendamento.Concluido;
+            if (!string.IsNullOrWhiteSpace(observacoesAdmin))
+            {
+                agendamento.ObservacoesAdmin += $"\n\nConclusão: {observacoesAdmin}";
+            }
+
+            await _context.SaveChangesAsync();
+
+            TempData["SuccessMessage"] = "Viagem concluída com sucesso!";
+            return RedirectToAction("Index");
+        }
         private async Task<List<object>> ObterVeiculosDisponiveis(Agendamento agendamento)
         {
             var veiculos = await _context.Veiculos
-                .Where(v => v.Categoria == agendamento.CategoriaVeiculo)
+                .Where(v => v.Categoria == agendamento.CategoriaVeiculo &&
+                           v.Status != StatusVeiculo.Manutencao) // Incluir todos exceto manutenção
                 .ToListAsync();
 
             var veiculosDisponiveis = new List<object>();
 
             foreach (var veiculo in veiculos)
             {
-                // Verificar se tem conflito de horário
+                // Verificar se tem conflito de horário - LÓGICA MELHORADA
                 var temConflito = await _context.Agendamentos
                     .Where(a => a.VeiculoAlocadoId == veiculo.Id &&
                                a.Id != agendamento.Id &&
                                a.Status != StatusAgendamento.Rejeitado &&
-                               a.Status != StatusAgendamento.Concluido)
+                               a.Status != StatusAgendamento.Concluido &&
+                               a.Status != StatusAgendamento.Cancelado)
                     .AnyAsync(a =>
-                        (agendamento.DataPartida >= a.DataPartida && agendamento.DataPartida < a.DataChegada) ||
-                        (agendamento.DataChegada > a.DataPartida && agendamento.DataChegada <= a.DataChegada) ||
-                        (agendamento.DataPartida <= a.DataPartida && agendamento.DataChegada >= a.DataChegada)
+                        // Sobreposição de horários: novo agendamento se sobrepõe ao existente
+                        (agendamento.DataPartida < a.DataChegada && agendamento.DataChegada > a.DataPartida)
                     );
 
                 if (!temConflito)
                 {
+                    var statusText = veiculo.Status == StatusVeiculo.Disponivel ? "" : $" ({veiculo.Status})";
                     veiculosDisponiveis.Add(new
                     {
                         Id = veiculo.Id,
-                        DisplayText = $"{veiculo.Modelo} - {veiculo.Placa} (Cap: {veiculo.CapacidadePassageiros})"
+                        DisplayText = $"{veiculo.Modelo} - {veiculo.Placa} (Cap: {veiculo.CapacidadePassageiros}){statusText}"
                     });
                 }
             }
@@ -229,23 +368,23 @@ namespace Sisloc.Controllers
         private async Task<List<Motorista>> ObterMotoristasDisponiveis(Agendamento agendamento)
         {
             var motoristas = await _context.Motoristas
-                .Where(m => m.Status == StatusMotorista.Disponivel)
+                .Where(m => m.Status != StatusMotorista.Irregular) // Incluir todos exceto irregulares
                 .ToListAsync();
 
             var motoristasDisponiveis = new List<Motorista>();
 
             foreach (var motorista in motoristas)
             {
-                // Verificar se tem conflito de horário
+                // Verificar se tem conflito de horário - LÓGICA MELHORADA
                 var temConflito = await _context.Agendamentos
                     .Where(a => a.MotoristaAlocadoId == motorista.Id &&
                                a.Id != agendamento.Id &&
                                a.Status != StatusAgendamento.Rejeitado &&
-                               a.Status != StatusAgendamento.Concluido)
+                               a.Status != StatusAgendamento.Concluido &&
+                               a.Status != StatusAgendamento.Cancelado)
                     .AnyAsync(a =>
-                        (agendamento.DataPartida >= a.DataPartida && agendamento.DataPartida < a.DataChegada) ||
-                        (agendamento.DataChegada > a.DataPartida && agendamento.DataChegada <= a.DataChegada) ||
-                        (agendamento.DataPartida <= a.DataPartida && agendamento.DataChegada >= a.DataChegada)
+                        // Sobreposição de horários
+                        (agendamento.DataPartida < a.DataChegada && agendamento.DataChegada > a.DataPartida)
                     );
 
                 if (!temConflito)

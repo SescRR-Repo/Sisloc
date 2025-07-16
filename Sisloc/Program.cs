@@ -1,7 +1,14 @@
 using Microsoft.EntityFrameworkCore;
 using Sisloc.Data;
+using Sisloc.Services;
+using System.Globalization;
 
 var builder = WebApplication.CreateBuilder(args);
+
+// Configuração de cultura e fuso horário para o Brasil
+var cultureInfo = new CultureInfo("pt-BR");
+CultureInfo.DefaultThreadCurrentCulture = cultureInfo;
+CultureInfo.DefaultThreadCurrentUICulture = cultureInfo;
 
 // Configuração do Entity Framework para .NET 8
 builder.Services.AddDbContext<SislocDbContext>(options =>
@@ -39,8 +46,11 @@ builder.Services.AddSession(options =>
 // Configuração de memória cache
 builder.Services.AddMemoryCache();
 
-// Configuração de serviços customizados (vamos criar depois)
+// Configuração de serviços customizados
+builder.Services.AddScoped<IVeiculoService, VeiculoService>();
+builder.Services.AddScoped<IMotoristaService, MotoristaService>();
 // builder.Services.AddScoped<IAgendamentoService, AgendamentoService>();
+// builder.Services.AddScoped<IMotoristaService, MotoristaService>();
 
 var app = builder.Build();
 
@@ -74,6 +84,16 @@ app.MapControllerRoute(
     name: "admin",
     pattern: "admin/{action=Index}/{id?}",
     defaults: new { controller = "Admin" });
+
+app.MapControllerRoute(
+    name: "veiculos",
+    pattern: "veiculos/{action=Index}/{id?}",
+    defaults: new { controller = "Veiculos" });
+
+app.MapControllerRoute(
+    name: "motoristas",
+    pattern: "motoristas/{action=Index}/{id?}",
+    defaults: new { controller = "Motoristas" });
 
 app.MapControllerRoute(
     name: "consulta",

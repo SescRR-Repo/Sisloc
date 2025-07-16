@@ -1,0 +1,305 @@
+﻿@model Sisloc.ViewModels.VeiculoEditViewModel
+
+@{
+    ViewData["Title"] = $"Editar Veículo {Model.Placa}";
+    var isReadonly = Model.TemAgendamentosAtivos;
+    var isDisabled = Model.TemAgendamentosAtivos;
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-edit me-2"></i>
+                    Editar Veículo
+                </h2>
+                <p class="text-muted">Atualize as informações do veículo <strong>@Model.Placa</strong></p>
+            </div>
+
+            <!-- Alertas de Status -->
+            @if (Model.TemAgendamentosAtivos)
+            {
+                <div class="alert alert-warning">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Atenção!</h6>
+                    <p class="mb-1">Este veículo possui <strong>@Model.QuantidadeAgendamentos agendamento(s) ativo(s)</strong>.</p>
+                    @if (Model.ProximoAgendamento.HasValue)
+                    {
+                        <small>Próximo agendamento: <strong>@Model.ProximoAgendamento.Value.ToString("dd/MM/yyyy HH:mm")</strong></small>
+                    }
+                </div>
+            }
+
+            <!-- Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" id="veiculoEditForm">
+                        <input type="hidden" asp-for="Id" />
+                        <input type="hidden" asp-for="TemAgendamentosAtivos" />
+                        <input type="hidden" asp-for="QuantidadeAgendamentos" />
+                        <input type="hidden" asp-for="ProximoAgendamento" />
+
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Dados Básicos -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-info-circle me-2 text-primary"></i>
+                                    Dados Básicos
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Placa e Modelo -->
+                        <div class="row mb-3">
+                            <div class="col-md-4">
+                                <label asp-for="Placa" class="form-label required"></label>
+                                @if (isReadonly)
+                                {
+                                    <input asp-for="Placa" class="form-control text-uppercase"
+                                           placeholder="ABC-1234" maxlength="8" style="font-family: monospace;" readonly>
+                                }
+                                else
+                                {
+                                    <input asp-for="Placa" class="form-control text-uppercase"
+                                           placeholder="ABC-1234" maxlength="8" style="font-family: monospace;">
+                                }
+                                <span asp-validation-for="Placa" class="text-danger"></span>
+                                @if (Model.TemAgendamentosAtivos)
+                                {
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-lock me-1"></i>Placa não pode ser alterada com agendamentos ativos
+                                    </div>
+                                }
+                                else
+                                {
+                                    <div class="form-text">Formato: ABC-1234 ou ABC-1D23</div>
+                                }
+                            </div>
+                            <div class="col-md-8">
+                                <label asp-for="Modelo" class="form-label required"></label>
+                                <input asp-for="Modelo" class="form-control" placeholder="Ex: Gol 1.0, Corolla XEI">
+                                <span asp-validation-for="Modelo" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Categoria e Capacidade -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Categoria" class="form-label required"></label>
+                                @if (isDisabled)
+                                {
+                                    <select asp-for="Categoria" class="form-select" asp-items="ViewBag.Categorias" disabled>
+                                        <option value="">Selecione a categoria</option>
+                                    </select>
+                                    <input type="hidden" asp-for="Categoria" />
+                                }
+                                else
+                                {
+                                    <select asp-for="Categoria" class="form-select" asp-items="ViewBag.Categorias">
+                                        <option value="">Selecione a categoria</option>
+                                    </select>
+                                }
+                                <span asp-validation-for="Categoria" class="text-danger"></span>
+                                @if (Model.TemAgendamentosAtivos)
+                                {
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-lock me-1"></i>Categoria não pode ser alterada com agendamentos ativos
+                                    </div>
+                                }
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CapacidadePassageiros" class="form-label required"></label>
+                                @if (isReadonly)
+                                {
+                                    <input asp-for="CapacidadePassageiros" class="form-control" type="number"
+                                           min="1" max="50" placeholder="Incluindo motorista" readonly>
+                                }
+                                else
+                                {
+                                    <input asp-for="CapacidadePassageiros" class="form-control" type="number"
+                                           min="1" max="50" placeholder="Incluindo motorista">
+                                }
+                                <span asp-validation-for="CapacidadePassageiros" class="text-danger"></span>
+                                @if (Model.TemAgendamentosAtivos)
+                                {
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-lock me-1"></i>Capacidade não pode ser alterada com agendamentos ativos
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-select" asp-items="ViewBag.StatusList">
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                                <div class="form-text">
+                                    <i class="fas fa-info-circle me-1"></i>
+                                    O status pode ser alterado independente dos agendamentos
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label asp-for="Observacoes" class="form-label"></label>
+                                <textarea asp-for="Observacoes" class="form-control" rows="3"
+                                          placeholder="Observações adicionais sobre o veículo (opcional)"></textarea>
+                                <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Informações sobre restrições -->
+                        @if (Model.TemAgendamentosAtivos)
+                        {
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle me-2"></i>Restrições de Edição:</h6>
+                                        <ul class="mb-0 small">
+                                            <li><strong>Placa:</strong> Não pode ser alterada com agendamentos ativos</li>
+                                            <li><strong>Categoria:</strong> Não pode ser alterada com agendamentos ativos</li>
+                                            <li><strong>Capacidade:</strong> Não pode ser alterada com agendamentos ativos</li>
+                                            <li><strong>Status e Observações:</strong> Podem ser alterados normalmente</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                                    </a>
+                                    <a asp-action="Index" class="btn btn-outline-primary">
+                                        <i class="fas fa-list me-2"></i>Lista de Veículos
+                                    </a>
+                                    <button type="submit" class="btn btn-warning btn-lg px-4">
+                                        <i class="fas fa-save me-2"></i>Salvar Alterações
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informações Adicionais -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h6 class="card-title text-info">
+                                <i class="fas fa-lightbulb me-2"></i>Dicas de Edição
+                            </h6>
+                            <ul class="mb-0 small">
+                                <li>Alterações em veículos com agendamentos ativos são limitadas por segurança</li>
+                                <li>O status pode ser alterado para colocar o veículo em manutenção</li>
+                                <li>Para alterações completas, aguarde a conclusão dos agendamentos ativos</li>
+                                <li>As observações podem incluir informações sobre manutenções ou características especiais</li>
+                            </ul>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            var temAgendamentosAtivos = @Html.Raw(Model.TemAgendamentosAtivos.ToString().ToLower());
+            var veiculoId = @Model.Id;
+
+            // Máscara para placa (se editável)
+            if (!$('#Placa').prop('readonly')) {
+                $('#Placa').on('input', function() {
+                    let valor = $(this).val().toUpperCase().replace(/[^A-Z0-9]/g, '');
+                    $(this).val(valor);
+
+                    // Verificar se placa já existe
+                    if (valor.length >= 6) {
+                        verificarPlaca(valor, veiculoId);
+                    }
+                });
+            }
+
+            // Ajustar capacidade baseado na categoria (se editável)
+            if (!$('#Categoria').prop('disabled')) {
+                $('#Categoria').on('change', function() {
+                    if (!$('#CapacidadePassageiros').prop('readonly')) {
+                        const categoria = $(this).val();
+                        const capacidadeInput = $('#CapacidadePassageiros');
+
+                        switch(categoria) {
+                            case '1': // Hatch
+                            case '2': // Sedan
+                                capacidadeInput.val(5);
+                                break;
+                            case '3': // Caminhonete
+                            case '4': // Pickup
+                                capacidadeInput.val(5);
+                                break;
+                            case '5': // Caminhão
+                                capacidadeInput.val(3);
+                                break;
+                        }
+                    }
+                });
+            }
+
+            // Validação em tempo real da placa
+            function verificarPlaca(placa, id) {
+                $.post('@Url.Action("VerificarPlaca")', { placa: placa, id: id }, function(data) {
+                    const placaInput = $('#Placa');
+                    if (data.existe) {
+                        placaInput.addClass('is-invalid');
+                        placaInput.next('.text-danger').html('Esta placa já está cadastrada em outro veículo.');
+                    } else {
+                        placaInput.removeClass('is-invalid');
+                        placaInput.next('.text-danger').html('');
+                    }
+                });
+            }
+
+            // Confirmar antes de enviar
+            $('#veiculoEditForm').on('submit', function(e) {
+                const confirmacao = confirm('Confirma as alterações neste veículo?');
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Mostrar loading
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Salvando...');
+                submitBtn.prop('disabled', true);
+
+                // Backup em caso de erro
+                setTimeout(() => {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+        });
+    </script>
+}

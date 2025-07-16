@@ -1,0 +1,412 @@
+﻿@model Sisloc.ViewModels.MotoristaEditViewModel
+
+@{
+    ViewData["Title"] = "Editar Motorista";
+}
+
+<div class="container">
+    <div class="row justify-content-center">
+        <div class="col-lg-8">
+
+            <!-- Header -->
+            <div class="text-center mb-4">
+                <h2 class="fw-bold text-primary">
+                    <i class="fas fa-user-edit me-2"></i>
+                    Editar Motorista
+                </h2>
+                <p class="text-muted">Atualize os dados do motorista</p>
+            </div>
+
+            <!-- Alerta de Agendamentos Ativos -->
+            @if (Model.TemAgendamentosAtivos)
+            {
+                <div class="alert alert-warning alert-dismissible fade show" role="alert">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Atenção - Agendamentos Ativos</h6>
+                    <p class="mb-2">
+                        Este motorista possui <strong>@Model.QuantidadeAgendamentos agendamento(s) ativo(s)</strong>.
+                       <br>
+                            Próximo agendamento: <strong> 
+                            @if (Model.ProximoAgendamento.HasValue)
+                            {
+                             @Model.ProximoAgendamento.Value.ToString("dd/MM/yyyy HH:mm") 
+                            }
+                        </strong>
+                    </p>
+                    <hr>
+                    <p class="mb-0">
+                        <i class="fas fa-info-circle me-1"></i>
+                        Algumas alterações podem estar restritas devido aos agendamentos ativos.
+                    </p>
+                    <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+                </div>
+            }
+
+            <!-- Alerta de Documentação -->
+            @if (Model.TemAlertaVencimento || Model.DocumentacaoVencida)
+            {
+                <div class="alert alert-@Model.GetClasseStatusDocumentacao()" role="alert">
+                    <h6><i class="fas fa-exclamation-triangle me-2"></i>Status da Documentação: @Model.GetStatusDocumentacao()</h6>
+                    @if (Model.GetAlertasDocumentacao().Any())
+                    {
+                        <ul class="mb-0">
+                            @foreach (var alerta in Model.GetAlertasDocumentacao())
+                            {
+                                <li>@alerta</li>
+                            }
+                        </ul>
+                    }
+                </div>
+            }
+
+            <!-- Formulário -->
+            <div class="card shadow-sm">
+                <div class="card-body p-4">
+                    <form asp-action="Edit" method="post" id="motoristaEditForm">
+                        <input type="hidden" asp-for="Id" />
+                        <div asp-validation-summary="ModelOnly" class="alert alert-danger" role="alert"></div>
+
+                        <!-- Dados Pessoais -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-user me-2 text-primary"></i>
+                                    Dados Pessoais
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Nome e Telefone -->
+                        <div class="row mb-3">
+                            <div class="col-md-8">
+                                <label asp-for="NomeCompleto" class="form-label required"></label>
+                                <input asp-for="NomeCompleto" class="form-control" placeholder="Nome completo do motorista">
+                                <span asp-validation-for="NomeCompleto" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-4">
+                                <label asp-for="Telefone" class="form-label required"></label>
+                                <input asp-for="Telefone" class="form-control" placeholder="(11) 99999-9999">
+                                <span asp-validation-for="Telefone" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Dados da CNH -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-id-card me-2 text-primary"></i>
+                                    Dados da CNH
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- CNH e Categoria -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="NumeroCnh" class="form-label required"></label>
+                                @if (Model.PodeAlterarCnh)
+                                {
+                                    <input asp-for="NumeroCnh" class="form-control" placeholder="12345678901" maxlength="11" style="font-family: monospace;">
+                                    <div class="form-text">Apenas números (11 dígitos)</div>
+                                }
+                                else
+                                {
+                                    <input asp-for="NumeroCnh" class="form-control" readonly style="font-family: monospace;">
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-lock me-1"></i>
+                                        CNH não pode ser alterada devido a agendamentos ativos
+                                    </div>
+                                }
+                                <span asp-validation-for="NumeroCnh" class="text-danger"></span>
+                            </div>
+                            <div class="col-md-6">
+                                <label asp-for="CategoriaCnh" class="form-label required"></label>
+                                @if (Model.PodeAlterarCategoria)
+                                {
+                                    <select asp-for="CategoriaCnh" class="form-select" asp-items="ViewBag.CategoriasCnh">
+                                        <option value="">Selecione a categoria</option>
+                                    </select>
+                                }
+                                else
+                                {
+                                    <select asp-for="CategoriaCnh" class="form-select" asp-items="ViewBag.CategoriasCnh" disabled>
+                                    </select>
+                                    <input type="hidden" asp-for="CategoriaCnh" />
+                                    <div class="form-text text-warning">
+                                        <i class="fas fa-lock me-1"></i>
+                                        Categoria não pode ser alterada devido a agendamentos ativos
+                                    </div>
+                                }
+                                <span asp-validation-for="CategoriaCnh" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Vencimento CNH -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="VencimentoCnh" class="form-label required"></label>
+                                <input asp-for="VencimentoCnh" class="form-control" type="date">
+                                <span asp-validation-for="VencimentoCnh" class="text-danger"></span>
+                                @if (Model.DiasParaVencimentoCnh <= 30)
+                                {
+                                    <div class="form-text text-@(Model.DiasParaVencimentoCnh < 0 ? "danger" : "warning")">
+                                        @(Model.DiasParaVencimentoCnh < 0 ? $"Vencida há {Math.Abs(Model.DiasParaVencimentoCnh)} dias" : $"Vence em {Model.DiasParaVencimentoCnh} dias")
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Exame Toxicológico -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-flask me-2 text-primary"></i>
+                                    Exame Toxicológico
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Data Exame -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="DataExameToxicologico" class="form-label required"></label>
+                                <input asp-for="DataExameToxicologico" class="form-control" type="date">
+                                <span asp-validation-for="DataExameToxicologico" class="text-danger"></span>
+                                <div class="form-text">Válido por 2 anos</div>
+                                @if (Model.DiasParaVencimentoExameTox <= 60)
+                                {
+                                    <div class="form-text text-@(Model.DiasParaVencimentoExameTox < 0 ? "danger" : "warning")">
+                                        @(Model.DiasParaVencimentoExameTox < 0 ? $"Vencido há {Math.Abs(Model.DiasParaVencimentoExameTox)} dias" : $"Vence em {Model.DiasParaVencimentoExameTox} dias")
+                                    </div>
+                                }
+                            </div>
+                        </div>
+
+                        <!-- Alerta de Vencimento (Dinâmico) -->
+                        <div class="row mb-3" id="alertaVencimento" style="display: none;">
+                            <div class="col-12">
+                                <div class="alert alert-warning" id="alertaTexto">
+                                    <i class="fas fa-exclamation-triangle me-2"></i>
+                                    <span id="mensagemAlerta"></span>
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Status e Observações -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <h5 class="border-bottom pb-2 mb-3">
+                                    <i class="fas fa-cog me-2 text-primary"></i>
+                                    Configurações
+                                </h5>
+                            </div>
+                        </div>
+
+                        <!-- Status -->
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label asp-for="Status" class="form-label"></label>
+                                <select asp-for="Status" class="form-select" asp-items="ViewBag.StatusList">
+                                </select>
+                                <span asp-validation-for="Status" class="text-danger"></span>
+                                <div class="form-text">
+                                    O status pode ser ajustado automaticamente baseado na documentação
+                                </div>
+                            </div>
+                        </div>
+
+                        <!-- Observações -->
+                        <div class="row mb-4">
+                            <div class="col-12">
+                                <label asp-for="Observacoes" class="form-label"></label>
+                                <textarea asp-for="Observacoes" class="form-control" rows="3"
+                                          placeholder="Observações adicionais sobre o motorista (opcional)"></textarea>
+                                <span asp-validation-for="Observacoes" class="text-danger"></span>
+                            </div>
+                        </div>
+
+                        <!-- Informações sobre agendamentos ativos -->
+                        @if (Model.TemAgendamentosAtivos)
+                        {
+                            <div class="row mb-4">
+                                <div class="col-12">
+                                    <div class="alert alert-info">
+                                        <h6><i class="fas fa-info-circle me-2"></i>Restrições devido a agendamentos ativos:</h6>
+                                        <ul class="mb-0 small">
+                                            <li>CNH e categoria não podem ser alteradas</li>
+                                            <li>Status pode ser limitado</li>
+                                            <li>@Model.QuantidadeAgendamentos agendamento(s) ativo(s)</li>
+                                        </ul>
+                                    </div>
+                                </div>
+                            </div>
+                        }
+
+                        <!-- Botões -->
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                                    <a asp-action="Details" asp-route-id="@Model.Id" class="btn btn-outline-secondary">
+                                        <i class="fas fa-eye me-2"></i>Ver Detalhes
+                                    </a>
+                                    <a asp-action="Index" class="btn btn-outline-secondary">
+                                        <i class="fas fa-arrow-left me-2"></i>Voltar
+                                    </a>
+                                    <button type="submit" class="btn btn-warning btn-lg px-4">
+                                        <i class="fas fa-save me-2"></i>Salvar Alterações
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+
+                    </form>
+                </div>
+            </div>
+
+            <!-- Informações sobre categorias CNH -->
+            <div class="row mt-4">
+                <div class="col-12">
+                    <div class="card border-info">
+                        <div class="card-body">
+                            <h6 class="card-title text-info">
+                                <i class="fas fa-info-circle me-2"></i>Informações sobre as categorias CNH
+                            </h6>
+                            <div class="row small">
+                                <div class="col-md-6">
+                                    <strong>A:</strong> Motocicletas<br>
+                                    <strong>B:</strong> Carros de passeio<br>
+                                    <strong>C:</strong> Caminhões pequenos<br>
+                                    <strong>D:</strong> Ônibus e micro-ônibus<br>
+                                    <strong>E:</strong> Caminhões grandes
+                                </div>
+                                <div class="col-md-6">
+                                    <strong>AB:</strong> Motocicletas + Carros<br>
+                                    <strong>AC:</strong> Motocicletas + Carros + Caminhões pequenos<br>
+                                    <strong>AD:</strong> Motocicletas + Carros + Ônibus<br>
+                                    <strong>AE:</strong> Todas as categorias
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+@section Scripts {
+    @{
+        await Html.RenderPartialAsync("_ValidationScriptsPartial");
+    }
+
+    <script>
+        $(document).ready(function() {
+            // Máscara para CNH (apenas se não estiver bloqueado)
+            if (!$('#NumeroCnh').is('[readonly]')) {
+                $('#NumeroCnh').on('input', function() {
+                    let valor = $(this).val().replace(/\D/g, '');
+                    $(this).val(valor);
+
+                    // Verificar se CNH já existe (após 11 dígitos)
+                    if (valor.length === 11) {
+                        verificarCnh(valor, @Model.Id);
+                    }
+                });
+            }
+
+            // Máscara para telefone
+            $('#Telefone').on('input', function() {
+                let valor = $(this).val().replace(/\D/g, '');
+
+                if (valor.length <= 10) {
+                    valor = valor.replace(/(\d{2})(\d{4})(\d{4})/, '($1) $2-$3');
+                } else {
+                    valor = valor.replace(/(\d{2})(\d{5})(\d{4})/, '($1) $2-$3');
+                }
+
+                $(this).val(valor);
+            });
+
+            // Atualizar alertas de vencimento em tempo real
+            function atualizarAlertasVencimento() {
+                const vencimentoCnh = new Date($('#VencimentoCnh').val());
+                const dataExame = new Date($('#DataExameToxicologico').val());
+                const hoje = new Date();
+
+                const cnhVenceEm = Math.ceil((vencimentoCnh - hoje) / (1000 * 60 * 60 * 24));
+                const exameToxVenceEm = Math.ceil((dataExame.setFullYear(dataExame.getFullYear() + 2) - hoje) / (1000 * 60 * 60 * 24));
+
+                let alertas = [];
+                let classe = 'alert-success';
+
+                if (cnhVenceEm < 0) {
+                    alertas.push('CNH vencida!');
+                    classe = 'alert-danger';
+                } else if (cnhVenceEm <= 30) {
+                    alertas.push(`CNH vence em ${cnhVenceEm} dias`);
+                    classe = 'alert-warning';
+                }
+
+                if (exameToxVenceEm < 0) {
+                    alertas.push('Exame toxicológico vencido!');
+                    classe = 'alert-danger';
+                } else if (exameToxVenceEm <= 60) {
+                    alertas.push(`Exame toxicológico vence em ${exameToxVenceEm} dias`);
+                    if (classe !== 'alert-danger') classe = 'alert-warning';
+                }
+
+                const alertaDiv = $('#alertaVencimento');
+                const alertaTextoDiv = $('#alertaTexto');
+                const mensagemSpan = $('#mensagemAlerta');
+
+                if (alertas.length > 0) {
+                    alertaTextoDiv.removeClass('alert-success alert-warning alert-danger').addClass(classe);
+                    mensagemSpan.text(alertas.join(' | '));
+                    alertaDiv.show();
+                } else {
+                    alertaDiv.hide();
+                }
+            }
+
+            $('#VencimentoCnh, #DataExameToxicologico').on('change', atualizarAlertasVencimento);
+
+            // Validação em tempo real da CNH
+            function verificarCnh(numeroCnh, id) {
+                $.post('@Url.Action("VerificarCnh")', { numeroCnh: numeroCnh, id: id }, function(data) {
+                    const cnhInput = $('#NumeroCnh');
+                    if (data.existe) {
+                        cnhInput.addClass('is-invalid');
+                        cnhInput.next('.text-danger').html('Esta CNH já está cadastrada por outro motorista.');
+                    } else {
+                        cnhInput.removeClass('is-invalid');
+                        cnhInput.next('.text-danger').html('');
+                    }
+                });
+            }
+
+            // Confirmar antes de enviar
+            $('#motoristaEditForm').on('submit', function(e) {
+                const confirmacao = confirm('Confirma as alterações neste motorista?');
+                if (!confirmacao) {
+                    e.preventDefault();
+                    return false;
+                }
+
+                // Mostrar loading
+                const submitBtn = $(this).find('button[type="submit"]');
+                const originalText = submitBtn.html();
+                submitBtn.html('<i class="fas fa-spinner fa-spin me-2"></i>Salvando...');
+                submitBtn.prop('disabled', true);
+
+                // Backup em caso de erro
+                setTimeout(() => {
+                    submitBtn.html(originalText);
+                    submitBtn.prop('disabled', false);
+                }, 10000);
+            });
+
+            // Executar validação inicial
+            atualizarAlertasVencimento();
+        });
+    </script>
+}
